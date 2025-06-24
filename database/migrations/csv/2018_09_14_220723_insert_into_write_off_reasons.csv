@@ -1,0 +1,10 @@
+id,name
+tasting,Дегустация
+shelf-life,Списание по сроку
+quality,Списание по качеству
+broken,Списание по бою
+improper-storage,Списание неправ. хранение
+dismantling,Разукомплектация (расх компл)
+cancellation-delivery,Отмена Поставки со склада
+movement,Расход по перемещению товара
+correction,Минус корректировка товара

@@ -1,0 +1,503 @@
+swagger: "2.0"
+
+#
+# @see https://plugins.jetbrains.com/plugin/8347-swagger-plugin
+# @see https://github.com/sourcey/spectacle
+#
+
+schemes:
+  - https
+
+host: $DOCS_URL
+
+info:
+  title: SMART Public API for Drivers
+  version: v1
+  description: Тестовое окружение. Обязательный заголовок для запроса Accept:application/json
+
+securityDefinitions:
+  auth:
+    type: basic
+
+paths:
+  /product-requests/delivery/{product_request_uuid}:
+    get:
+      security:
+      - auth: []
+      summary: Получение заявки на перевозку текущего водителя
+      tags:
+      - Управление заявками на перевозку
+      parameters:
+      - $ref: "#/parameters/ProductRequest/uuid"
+      responses:
+        200:
+          description: Объект
+          schema:
+            $ref: "#/definitions/DeliveryProductRequestResponse"
+
+  /product-requests/delivery/{product_request_uuid}/products:
+    get:
+      security:
+      - auth: []
+      summary: Получение товаров из заявки на перевозку
+      tags:
+      - Управление заявками на перевозку
+      parameters:
+      - $ref: "#/parameters/ProductRequest/uuid"
+      - $ref: "#/parameters/Pagination/page"
+      - $ref: "#/parameters/Pagination/per_page"
+      - $ref: "#/parameters/Pagination/where"
+      - $ref: "#/parameters/Pagination/order_by"
+      responses:
+        200:
+          description: Массив объектов
+          schema:
+            $ref: "#/definitions/ProductRequestProductResponseCollection"
+
+  /transportations:
+    get:
+      security:
+        - auth: []
+      summary: Получение списка рейсов текущего водителя
+      tags:
+        - Управление рeйсами
+      parameters:
+        - $ref: "#/parameters/Pagination/page"
+        - $ref: "#/parameters/Pagination/per_page"
+        - $ref: "#/parameters/Pagination/where"
+        - $ref: "#/parameters/Pagination/order_by"
+      responses:
+        200:
+          description: Массив объектов
+          schema:
+            $ref: "#/definitions/TransportationResponseCollection"
+
+  /transportations/{transportation_uuid}/set-started:
+    put:
+      security:
+        - auth: []
+      summary: Начало рейса
+      tags:
+        - Управление рeйсами
+      parameters:
+        - $ref: "#/parameters/Transportation/uuid"
+      responses:
+        200:
+          description: Объект
+          schema:
+            $ref: "#/definitions/TransportationResponse"
+
+  /transportations/{transportation_uuid}/points:
+    get:
+      security:
+        - auth: []
+      summary: Получение точек рейса
+      tags:
+        - Управление рeйсами
+      parameters:
+        - $ref: "#/parameters/Transportation/uuid"
+        - $ref: "#/parameters/Pagination/page"
+        - $ref: "#/parameters/Pagination/per_page"
+        - $ref: "#/parameters/Pagination/where"
+        - $ref: "#/parameters/Pagination/order_by"
+      responses:
+        200:
+          description: Объект
+          schema:
+            $ref: "#/definitions/TransportationPointResponseCollection"
+
+  /transportations/{transportation_uuid}/points/{transportation_point_uuid}/set-arrived:
+    put:
+      security:
+        - auth: []
+      summary: Отметка даты приябытия в точку
+      tags:
+        - Управление рeйсами
+      parameters:
+        - $ref: "#/parameters/Transportation/uuid"
+        - $ref: "#/parameters/TransportationPoint/uuid"
+      responses:
+        200:
+          description: Объект
+          schema:
+            $ref: "#/definitions/TransportationPointResponse"
+
+parameters:
+  Pagination:
+    page:
+      name: page
+      type: integer
+      in: query
+      description: Номер страницы
+
+    per_page:
+      name: per_page
+      type: integer
+      in: query
+      description: Количество элементов на странице
+
+    where:
+      name: where
+      in: query
+      description: Условия фильтрации выборки
+
+    order_by:
+      name: order_by
+      in: query
+      description: Условия сортировки выборки
+
+  TransportationPoint:
+    uuid:
+      name: transportation_point_uuid
+      type: uuid
+      in: path
+      description: Идентификатор
+      required: true
+
+    arrived_at:
+      name: arrived_at
+      type: dateTime
+      in: body
+      description: Дата прибытия
+      required: true
+
+  Transportation:
+    uuid:
+      name: transportation_uuid
+      type: uuid
+      in: path
+      description: Идентификатор
+      required: true
+
+    started_at:
+      name: started_at
+      type: dateTime
+      in: body
+      description: Дата начала рейса
+      required: true
+
+  ProductRequest:
+    uuid:
+      name: product_request_uuid
+      type: uuid
+      in: path
+      description: Идентификатор заявки
+      required: true
+
+definitions:
+  ProductRequestProductResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            product_uuid:
+              description: Идентификатор товара
+              type: uuid
+              example: 8bbd46f9-805b-4098-8ae1-da948b65219a
+            assortment_uuid:
+              description: Идентификатор номенклатуры
+              type: uuid
+              example: b4c8e3ff-4797-4dbc-8c3e-a81ec192bb92
+            assortment_name:
+              description: Наименование номенклатуры
+              type: string
+              example: "1л. Пэт Минеральная вода"
+            quantity:
+              description: Количество товара в заявке
+              type: integer
+              example: 27
+            price:
+              description: Цена товара
+              type: number
+              example: 50
+            weight:
+              description: Масса в граммах
+              type: number
+              example: 1203
+            volume:
+              description: Объем в мм кубических
+              type: number
+              example: 125
+      meta:
+        properties:
+          current_page:
+            description: Номер текущей страницы
+            type: integer
+            example: 1
+          from:
+            description: Идентификатор
+            type: С какого номера элементы на выбранной странице
+            example: 1
+          last_page:
+            description: Номер последней старницы с данными
+            type: integer
+            example: 3
+          per_page:
+            description: Количетсво элементов на странице
+            type: integer
+            example: 10
+          to:
+            description: До какого номера элементы на выбранной странице
+            type: integer
+            example: 10
+          total:
+            description: Сумарное количество элементов в выборке
+            type: integer
+            example: 27
+
+  DeliveryProductRequestResponse:
+    description: Заявка на перевозку
+    type: object
+    properties:
+      data:
+        properties:
+          uuid:
+            description: Идентификатор
+            type: uuid
+            example: 8bbd46f9-805b-4098-8ae1-da948b65219a
+          customer_user_uuid:
+            description: Идентификатор заказчика
+            type: uuid
+            example: 8bc45af4-e541-430e-9769-9b7046a89b7e
+          customer_user_address:
+            description: Адрес организации заказчика
+            type: string
+            example: "392730, Орловская область, город Ногинск, пер. Косиора, 92"
+          supplier_user_uuid:
+            description: Идентификатор поставщика
+            type: uuid
+            example: 8bc45af4-e541-430e-9769-9b7046a89b7e
+          supplier_user_address:
+            description: Адрес организации поставщика
+            type: string
+            example: "392730, Орловская область, город Ногинск, пер. Косиора, 92"
+          weight:
+            description: Масса в граммах
+            type: number
+            example: 1203
+          volume:
+            description: Объем в мм кубических
+            type: number
+            example: 125
+          product_request_delivery_status_id:
+            description: Статус заявки на перевозку
+            type: string
+            example: "done"
+          created_at:
+            description: Дата создания
+            type: dateTime
+            example: "2018-09-18 00:29:11-04"
+
+  TransportationResponse:
+    description: Рейс
+    type: object
+    properties:
+      data:
+        properties:
+          uuid:
+            description: Идентификатор
+            type: uuid
+            example: 8bbd46f9-805b-4098-8ae1-da948b65219a
+          date:
+            description: Дата рейса
+            type: dateTime
+            example: "2018-09-18"
+          car_uuid:
+            description: Идентификатор автомобиля
+            type: uuid
+            example: 8bbd6e20-1fc2-4bb5-9c3d-c3460ca5c852
+          car_license_plate:
+            description: Гос.номер
+            type: string
+            example: "В135ВВ777"
+          driver_uuid:
+            description: Идентификатор водителя
+            type: uuid
+            x-nullable: true
+            example: 8bbd8418-f7b9-41d1-9326-6cea8868e30a
+          driver_full_name:
+            description: ФИО водителя
+            type: string
+            example: "Попов Максим Петрович"
+          transportation_status_id:
+            description: Статус рейса
+            type: string
+            example: "done"
+          started_at:
+            description: Дата начала рейса
+            type: dateTime
+            example: "2018-09-18 00:29:11-04"
+
+  TransportationResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            uuid:
+              description: Идентификатор
+              type: uuid
+              example: 8bbd46f9-805b-4098-8ae1-da948b65219a
+            date:
+              description: Дата рейса
+              type: dateTime
+              example: "2018-09-18"
+            car_uuid:
+              description: Идентификатор автомобиля
+              type: uuid
+              example: 8bbd6e20-1fc2-4bb5-9c3d-c3460ca5c852
+            car_license_plate:
+              description: Гос.номер
+              type: string
+              example: "В135ВВ777"
+            driver_uuid:
+              description: Идентификатор водителя
+              type: uuid
+              x-nullable: true
+              example: 8bbd8418-f7b9-41d1-9326-6cea8868e30a
+            driver_full_name:
+              description: ФИО водителя
+              type: string
+              example: "Попов Максим Петрович"
+            first_transportation_point_uuid:
+              description: Идентификатор первой точки рейса
+              type: uuid
+              example: 8bbd46f9-805b-4098-8ae1-da948b65219a
+            first_transportation_point_address:
+              description: Адресс первой точки рейса
+              type: string
+              example: "392730, Орловская область, город Ногинск, пер. Косиора, 92"
+            last_transportation_point_uuid:
+              description: Идентификатор последней точки рейса
+              type: uuid
+              example: 8bbd46f9-805b-4098-8ae1-da948b65219a
+            last_transportation_point_address:
+              description: Адресс первой точки рейса
+              type: string
+              example: "392730, Орловская область, город Ногинск, пер. Косиора, 92"
+            transportation_status_id:
+              description: Статус рейса
+              type: string
+              example: "done"
+            started_at:
+              description: Дата начала рейса
+              type: dateTime
+              example: "2018-09-18 00:29:11-04"
+      meta:
+        properties:
+          current_page:
+            description: Номер текущей страницы
+            type: integer
+            example: 1
+          from:
+            description: Идентификатор
+            type: С какого номера элементы на выбранной странице
+            example: 1
+          last_page:
+            description: Номер последней старницы с данными
+            type: integer
+            example: 3
+          per_page:
+            description: Количетсво элементов на странице
+            type: integer
+            example: 10
+          to:
+            description: До какого номера элементы на выбранной странице
+            type: integer
+            example: 10
+          total:
+            description: Сумарное количество элементов в выборке
+            type: integer
+            example: 27
+
+  TransportationPointResponse:
+    description: Точка рейса
+    type: object
+    properties:
+      data:
+        properties:
+          uuid:
+            description: Идентификатор
+            type: uuid
+            example: 8bbd46f9-805b-4098-8ae1-da948b65219a
+          product_request_uuid:
+            description: Идентификатор заявки на перевозку
+            type: uuid
+            example: efbc12bf-f0d6-418b-a4d0-18feb095cabd
+          transportation_point_type_id:
+            description: Тип точки
+            type: string
+            example: "loading"
+          address:
+            description: Адресс точки рейса
+            type: string
+            example: "392730, Орловская область, город Ногинск, пер. Косиора, 92"
+          arrived_at:
+            description: Дата прибытия
+            type: dateTime
+            x-nullable: true
+            example: "2018-09-18 00:29:11-04"
+
+  TransportationPointResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            uuid:
+              description: Идентификатор
+              type: uuid
+              example: 8bbd46f9-805b-4098-8ae1-da948b65219a
+            product_request_uuid:
+              description: Идентификатор заявки на перевозку
+              type: uuid
+              example: efbc12bf-f0d6-418b-a4d0-18feb095cabd
+            transportation_point_type_id:
+              description: Тип точки
+              type: string
+              example: "loading"
+            address:
+              description: Адресс точки рейса
+              type: string
+              example: "392730, Орловская область, город Ногинск, пер. Косиора, 92"
+            arrived_at:
+              description: Дата прибытия
+              type: dateTime
+              x-nullable: true
+              example: "2018-09-18 00:29:11-04"
+      meta:
+        properties:
+          current_page:
+            description: Номер текущей страницы
+            type: integer
+            example: 1
+          from:
+            description: Идентификатор
+            type: С какого номера элементы на выбранной странице
+            example: 1
+          last_page:
+            description: Номер последней старницы с данными
+            type: integer
+            example: 3
+          per_page:
+            description: Количетсво элементов на странице
+            type: integer
+            example: 10
+          to:
+            description: До какого номера элементы на выбранной странице
+            type: integer
+            example: 10
+          total:
+            description: Сумарное количество элементов в выборке
+            type: integer
+            example: 27

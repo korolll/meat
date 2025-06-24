@@ -1,0 +1,304 @@
+swagger: '2.0'
+schemes:
+  - https
+host: $DOCS_URL
+info:
+  title: Public API for Cash Registers
+  version: v1
+  description: 'Тестовое окружение. Обязательный заголовок для запроса Accept:application/json'
+paths:
+  /loyalty-cards/associate:
+    post:
+      summary: Привязка карты
+      tags:
+        - Карты лояльности
+      parameters:
+        - $ref: '#/parameters/LoyaltyCard/loyalty_card_type_uuid'
+        - $ref: '#/parameters/LoyaltyCard/loyalty_card_number'
+        - $ref: '#/parameters/LoyaltyCard/phone'
+        - $ref: '#/parameters/LoyaltyCard/code'
+        - $ref: '#/parameters/LoyaltyCard/client_name'
+      responses:
+        '200':
+          description: Карта успешно привязана
+          schema:
+            $ref: '#/definitions/LoyaltyCardResponse'
+        '201':
+          description: Код подтверждения отправлен
+  /loyalty-cards/find:
+    get:
+      summary: Поиск карты
+      tags:
+        - Карты лояльности
+      parameters:
+        - $ref: '#/parameters/LoyaltyCard/user_uuid'
+        - $ref: '#/parameters/LoyaltyCard/query_loyalty_card_type_uuid'
+        - $ref: '#/parameters/LoyaltyCard/query_loyalty_card_number'
+      responses:
+        '200':
+          description: Объект
+          schema:
+            $ref: '#/definitions/LoyaltyCardResponse'
+  /loyalty-cards/findloyaltycardbyphone:
+    get:
+      summary: Поиск карты по номеру тел. клиента
+      tags:
+        - Карты лояльности
+      parameters:
+        - $ref: '#/parameters/Client/phone'
+      responses:
+        '200':
+          description: Объект
+          schema:
+            $ref: '#/definitions/LoyaltyCardResponse'
+  /receipts/calculate-discount:
+    post:
+      summary: Calculate discount
+      tags:
+        - Receipts
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              loyalty_card_uuid:
+                type: string
+                format: uuid
+              store_uuid:
+                type: string
+                format: uuid
+              total:
+                type: number
+              items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    price:
+                      type: number
+                      minimum: 0.01
+                    count:
+                      type: number
+                      minimum: 0.01
+                    sum:
+                      type: number
+                      minimum: 0.01
+                    number:
+                      type: string
+                  required:
+                    - name
+                    - price
+                    - count
+                    - sum
+                    - number
+              total_with_discount:
+                type: number
+              discount:
+                type: number
+            required:
+              - loyalty_card_uuid
+              - store_uuid
+              - total
+              - total_with_discount
+              - discount
+        '422':
+          description: Unprocessable Entity (WebDAV)
+          schema:
+            type: object
+            properties: {}
+      operationId: post-receipts-calculate-discount
+      parameters:
+        - in: body
+          name: body
+          schema:
+            type: object
+            properties:
+              loyalty_card_uuid:
+                type: string
+                format: uuid
+              store_uuid:
+                type: string
+                format: uuid
+              total:
+                type: number
+              items:
+                type: array
+                minItems: 1
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    price:
+                      type: number
+                      minimum: 0.01
+                    count:
+                      type: number
+                      minimum: 0.01
+                    sum:
+                      type: number
+                      minimum: 0.01
+                    number:
+                      type: string
+                  required:
+                    - name
+                    - price
+                    - count
+                    - sum
+                    - number
+            required:
+              - loyalty_card_uuid
+              - store_uuid
+              - total
+              - items
+  /receipts:
+    post:
+      summary: Store receipt
+      tags:
+        - Receipts
+      operationId: post-receipts
+      parameters:
+        - in: body
+          name: body
+          schema:
+            type: object
+            properties:
+              loyalty_card_uuid:
+                type: string
+                format: uuid
+              store_uuid:
+                type: string
+                format: uuid
+              receipt_id:
+                type: integer
+              receipt_package_id:
+                type: integer
+              uuid:
+                type: string
+                format: uuid
+                description: Receipt uuid (if it is not provided then we will generate it)
+              refund_by_receipt_uuid:
+                type: string
+                format: uuid
+                description: Reference to refunded receipt uuid (it should be exist in the system)
+              total:
+                type: number
+              items:
+                type: array
+                minItems: 1
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    price:
+                      type: number
+                      minimum: 0.01
+                    count:
+                      type: number
+                      minimum: 0.01
+                    sum:
+                      type: number
+                      minimum: 0.01
+                    number:
+                      type: string
+                  required:
+                    - name
+                    - price
+                    - count
+                    - sum
+                    - number
+            required:
+              - store_uuid
+              - total
+              - items
+      responses:
+        '201':
+          description: Created
+          schema:
+            type: object
+            properties: {}
+        '422':
+          description: Unprocessable Entity (WebDAV)
+          schema:
+            type: object
+            properties: {}
+parameters:
+  LoyaltyCard:
+    user_uuid:
+      name: user_uuid
+      type: uuid
+      in: query
+      description: Идентификатор магазина
+      required: true
+    query_loyalty_card_type_uuid:
+      name: loyalty_card_type_uuid
+      type: uuid
+      in: query
+      description: Идентификатор типа карт лояльности
+      required: true
+    query_loyalty_card_number:
+      name: loyalty_card_number
+      type: integer
+      in: query
+      description: Номер карты лояльности
+      required: true
+    loyalty_card_type_uuid:
+      name: loyalty_card_type_uuid
+      type: uuid
+      in: body
+      description: Идентификатор типа карт лояльности
+      required: true
+    loyalty_card_number:
+      name: loyalty_card_number
+      type: integer
+      in: body
+      description: Номер карты лояльности
+      required: true
+    phone:
+      name: phone
+      type: string
+      in: body
+      description: Номер телефона клиента
+      required: true
+    client_name:
+      name: client_name
+      type: string
+      in: body
+      description: Имя клиента
+      x-nullable: true
+    code:
+      name: code
+      type: integer
+      in: body
+      description: Код из смс
+      x-nullable: true
+  Client:
+    phone:
+      name: phone
+      type: string
+      in: body
+      description: Номер телефона клиента
+      required: true
+definitions:
+  LoyaltyCardResponse:
+    description: Карты лояльности
+    type: object
+    properties:
+      data:
+        properties:
+          uuid:
+            description: Идентификатор
+            type: uuid
+            example: fc6ce5f1-b6db-4cf9-8318-bbb3efbb64b1
+          discount_percent:
+            description: Скидка по карте
+            type: integer
+            example: 3
+          loyalty_card_number:
+            description: Номер карты лояльности
+            type: integer
+            example: 1000029

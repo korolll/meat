@@ -1,0 +1,45 @@
+stages:
+  - test
+  - deploy
+  - cleanup
+
+test:
+  stage: test
+  script:
+    - echo "test stage"
+  tags:
+    - backend-group
+
+deploy:
+  stage: deploy
+  script:
+#    - cp -r /project/backend/backend-git/storage/app/public /project/backend/data/backend/storage
+    - sudo rm -rf /project/backend/backend-git && mkdir /project/backend/backend-git/  && cp -R * /project/backend/backend-git/
+#    - cp -r /project/backend/data/backend/storage /project/backend/backend-git/storage/app/public
+    - mkdir -p /project/backend/backend-git/storage/framework/{sessions,views,cache}
+    - mkdir -p /project/backend/backend-git/storage/logs
+    - sudo chmod -R ugo+rw /project/backend/backend-git/
+    - cp /project/backend/conf/backend/.env /project/backend/backend-git/
+    - cd /project/backend && docker-compose up -d --force-recreate --build backend-app
+    - cd /project/backend && docker-compose exec -T backend-app composer install
+    - cd /project/backend && docker-compose exec -T backend-app php artisan migrate
+    - cd /project/backend && docker-compose exec -T backend-app php artisan config:cache
+    - cd /project/backend && docker-compose exec -T backend-app php artisan route:cache
+    - cd /project/backend && docker-compose exec -T backend-app php artisan queue:restart
+    - cd /project/backend && docker-compose exec -T backend-app php artisan storage:link
+    - cd /project/backend && docker-compose exec -T backend-app npm ci
+    - cd /project/backend && docker-compose exec -T backend-app npm run doc-build-all
+    - sudo chmod -R 777 /project/backend/backend-git/
+    - cd /project/backend && docker-compose up -d --force-recreate backend-nginx
+  only:
+    - master
+    - cicd
+  tags:
+    - backend-group
+
+cleanup:
+  stage: cleanup
+  script:
+    - docker image prune -f
+  tags:
+    - backend-group

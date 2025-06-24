@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit backupGlobals="false"
+         backupStaticAttributes="false"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false">
+    <testsuites>
+        <testsuite name="Unit">
+            <directory suffix="Test.php">./tests/Unit</directory>
+        </testsuite>
+
+        <testsuite name="Feature">
+            <directory suffix="Test.php">./tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">./app</directory>
+        </whitelist>
+    </filter>
+    <php>
+        <server name="APP_ENV" value="testing"/>
+        <server name="BCRYPT_ROUNDS" value="4"/>
+        <server name="CACHE_DRIVER" value="array"/>
+        <server name="SESSION_DRIVER" value="array"/>
+        <server name="QUEUE_DRIVER" value="sync"/>
+        <server name="MAIL_DRIVER" value="array"/>
+        <server name="MAIL_MAILER" value="array"/>
+        <server name="GEOCODER_CACHE_STORE" value="array"/>
+        <server name="ONE_C_PRODUCT_REQUEST_EXPORTER_URI" value=""/>
+        <server name="ONE_C_PRICE_LIST_EXPORTER_URI" value=""/>
+        <server name="ONE_C_CATALOG_EXPORTER_URI" value=""/>
+        <server name="RESPONSE_CACHE_ENABLED" value="false"/>
+        <server name="APP_CLIENT_BONUSES_FOR_FILLED_PROFILE" value="0"/>
+        <server name="APP_ORDER_PRICE_FODRC_DISCOUNT_PERCENT" value="0"/>
+    </php>
+</phpunit>

@@ -1,0 +1,116 @@
+#image: fl0od/php-npm-py-ci:7.4.22
+image: harbor.automacon.net/automacon/php-npm-py-ci:8.1
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+  - vendor/
+  - node_modules/
+
+deploy_prod:
+   before_script:
+     - composer install --optimize-autoloader
+
+     - eval $(ssh-agent -s)
+     - echo "$DEPLOYMENT_KEY" | tr -d '\r' | ssh-add -
+
+     # костыль для обновления устаревших зависимостей
+     #- npm install --include=dev node-gyp
+     #- npm install --include=dev node-sass
+     #####################
+
+     - npm ci
+     - npm run doc-build-all
+
+   stage: deploy
+   only:
+     - master
+   tags:
+     - kprg-prod-docker
+
+   script:
+    - echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
+    - ssh $DEPLOYMENT_HOST_PROD -p $DEPLOYMENT_PORT_PROD sudo chown -R deploy:deploy /opt/kprg-backend/backend-git
+    - rsync -rlpcvz --no-p -e "ssh -o StrictHostKeyChecking=no -p $DEPLOYMENT_PORT_PROD" . $DEPLOYMENT_HOST_PROD:/opt/kprg-backend/backend-git  --exclude '.git' --exclude 'storage'
+    - ssh $DEPLOYMENT_HOST_PROD -p $DEPLOYMENT_PORT_PROD sudo chown -R www-data:www-data /opt/kprg-backend/backend-git
+
+    - ssh -o 'RequestTTY force' $DEPLOYMENT_HOST_PROD -p $DEPLOYMENT_PORT_PROD sudo docker exec -it kprg-backend-php-fpm php /var/www/artisan migrate
+    - ssh -o 'RequestTTY force' $DEPLOYMENT_HOST_PROD -p $DEPLOYMENT_PORT_PROD sudo docker exec -it kprg-backend-php-fpm php /var/www/artisan config:cache
+    - ssh -o 'RequestTTY force' $DEPLOYMENT_HOST_PROD -p $DEPLOYMENT_PORT_PROD sudo docker exec -it kprg-backend-php-fpm php /var/www/artisan route:cache
+    - ssh -o 'RequestTTY force' $DEPLOYMENT_HOST_PROD -p $DEPLOYMENT_PORT_PROD sudo docker exec -it kprg-backend-php-fpm php /var/www/artisan view:cache
+    - ssh -o 'RequestTTY force' $DEPLOYMENT_HOST_PROD -p $DEPLOYMENT_PORT_PROD sudo docker exec -it kprg-backend-php-fpm supervisorctl restart "queue-work:"
+
+
+#################################################################
+
+deploy_meat:
+   before_script:
+     - composer install --optimize-autoloader
+
+     - eval $(ssh-agent -s)
+     - echo "$DEPLOYMENT_KEY" | tr -d '\r' | ssh-add -
+
+     # костыль для обновления устаревших зависимостей
+     - npm install --include=dev node-gyp
+     - npm install --include=dev node-sass
+     #####################
+
+     - npm ci
+     - npm run doc-build-all
+
+   stage: deploy
+   only:
+     - meatfactory
+   tags:
+     - kprg-meatfactory-docker
+
+   script:
+    - echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
+    - ssh $DEPLOYMENT_HOST_MEAT -p $DEPLOYMENT_PORT_MEAT sudo chown -R deploy:deploy /opt/kprg-backend/backend-git
+    - rsync -rlpcvz --no-p -e "ssh -o StrictHostKeyChecking=no -p $DEPLOYMENT_PORT_MEAT" . $DEPLOYMENT_HOST_MEAT:/opt/kprg-backend/backend-git  --exclude '.git' --exclude 'storage'
+    - ssh $DEPLOYMENT_HOST_MEAT -p $DEPLOYMENT_PORT_MEAT sudo chown -R www-data:www-data /opt/kprg-backend/backend-git
+
+    - ssh -o 'RequestTTY force' $DEPLOYMENT_HOST_MEAT -p $DEPLOYMENT_PORT_MEAT sudo docker exec -it kprg-backend-php-fpm php /var/www/artisan migrate
+    - ssh -o 'RequestTTY force' $DEPLOYMENT_HOST_MEAT -p $DEPLOYMENT_PORT_MEAT sudo docker exec -it kprg-backend-php-fpm php /var/www/artisan config:cache
+    - ssh -o 'RequestTTY force' $DEPLOYMENT_HOST_MEAT -p $DEPLOYMENT_PORT_MEAT sudo docker exec -it kprg-backend-php-fpm php /var/www/artisan route:cache
+    - ssh -o 'RequestTTY force' $DEPLOYMENT_HOST_MEAT -p $DEPLOYMENT_PORT_MEAT sudo docker exec -it kprg-backend-php-fpm php /var/www/artisan view:cache
+    - ssh -o 'RequestTTY force' $DEPLOYMENT_HOST_MEAT -p $DEPLOYMENT_PORT_MEAT sudo docker exec -it kprg-backend-php-fpm supervisorctl restart "queue-work:"
+
+#################################################################
+
+deploy_test:
+   before_script:
+     - composer install --optimize-autoloader
+
+     - eval $(ssh-agent -s)
+     - echo "$DEPLOYMENT_KEY_TEST" | tr -d '\r' | ssh-add -
+
+     # костыль для обновления устаревших зависимостей
+#     - npm install --include=dev node-gyp
+#     - npm install --include=dev node-sass
+     #####################
+
+     - npm ci
+     - npm run doc-build-all
+
+   stage: deploy
+   only:
+     - dev
+   tags:
+     - tests
+   variables:
+    DEPLOYMENT_PATH: "/opt/kprg/kprg-backend/app"
+
+   script:
+    - echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
+    - ssh $DEPLOYMENT_HOST_TEST -p $DEPLOYMENT_PORT_TEST sudo chown -R deploy:deploy $DEPLOYMENT_PATH
+    - rsync -rlpcvz --no-p -e "ssh -o StrictHostKeyChecking=no -p $DEPLOYMENT_PORT_TEST" . $DEPLOYMENT_HOST_TEST:$DEPLOYMENT_PATH  --exclude '.git' --exclude 'storage'
+    - ssh $DEPLOYMENT_HOST_TEST -p $DEPLOYMENT_PORT_TEST sudo chown -R www-data:www-data $DEPLOYMENT_PATH
+
+    - ssh -o 'RequestTTY force' $DEPLOYMENT_HOST_TEST -p $DEPLOYMENT_PORT_TEST sudo docker exec -it kprg-backend-php-fpm php /var/www/artisan migrate
+    - ssh -o 'RequestTTY force' $DEPLOYMENT_HOST_TEST -p $DEPLOYMENT_PORT_TEST sudo docker exec -it kprg-backend-php-fpm php /var/www/artisan config:cache
+    - ssh -o 'RequestTTY force' $DEPLOYMENT_HOST_TEST -p $DEPLOYMENT_PORT_TEST sudo docker exec -it kprg-backend-php-fpm php /var/www/artisan route:cache
+    - ssh -o 'RequestTTY force' $DEPLOYMENT_HOST_TEST -p $DEPLOYMENT_PORT_TEST sudo docker exec -it kprg-backend-php-fpm php /var/www/artisan view:cache
+    #- ssh -o 'RequestTTY force' $DEPLOYMENT_HOST_TEST -p $DEPLOYMENT_PORT_TEST sudo docker exec -it kprg-backend-php-fpm php /var/www/artisan storage:link
+    - ssh -o 'RequestTTY force' $DEPLOYMENT_HOST_TEST -p $DEPLOYMENT_PORT_TEST sudo docker exec -it kprg-backend-php-fpm supervisorctl restart "queue-work:"
+    - ssh -o 'RequestTTY force' $DEPLOYMENT_HOST_TEST -p $DEPLOYMENT_PORT_TEST sudo docker exec -it kprg-backend-php-fpm supervisorctl restart "queue-notifications:"

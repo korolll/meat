@@ -1,0 +1,4938 @@
+swagger: '2.0'
+schemes:
+  - https
+host: $DOCS_URL
+info:
+  title: Public API for Clients
+  version: v1
+  description: 'Тестовое окружение. Обязательный заголовок для запроса Accept:application/json'
+securityDefinitions:
+  auth:
+    type: apiKey
+    in: query
+    name: api_token
+paths:
+  /auth/login-via-phone:
+    post:
+      summary: Вход в систему с помощью номера телефона
+      tags:
+        - Авторизация
+      parameters:
+        - $ref: '#/parameters/Auth/phone'
+        - $ref: '#/parameters/Auth/code'
+      responses:
+        '200':
+          description: Токен для авторизации
+          schema:
+            $ref: '#/definitions/TokenResponse'
+        '201':
+          description: Отправлен код в смс
+          schema:
+            $ref: '#/definitions/CodeResponse'
+  /auth/login-via-loyalty-card:
+    post:
+      summary: Вход в систему с помощью карты лояльности
+      tags:
+        - Авторизация
+      parameters:
+        - $ref: '#/parameters/Auth/loyalty_card_type_uuid'
+        - $ref: '#/parameters/Auth/loyalty_card_number'
+        - $ref: '#/parameters/Auth/code'
+      responses:
+        '200':
+          description: Токен для авторизации
+          schema:
+            $ref: '#/definitions/TokenResponse'
+        '201':
+          description: Отправлен код в смс
+          schema:
+            $ref: '#/definitions/CodeResponse'
+  /auth/reset-via-loyalty-card:
+    post:
+      summary: Смена номера телефона с помощью карты лояльности
+      tags:
+        - Авторизация
+      parameters:
+        - $ref: '#/parameters/Auth/loyalty_card_type_uuid'
+        - $ref: '#/parameters/Auth/loyalty_card_number'
+        - $ref: '#/parameters/Auth/old_phone_last_four_digits'
+        - $ref: '#/parameters/Auth/new_phone'
+        - $ref: '#/parameters/Auth/code'
+      responses:
+        '200':
+          description: Токен для авторизации
+          schema:
+            $ref: '#/definitions/TokenResponse'
+        '201':
+          description: Отправлен код в смс
+          schema:
+            $ref: '#/definitions/CodeResponse'
+  /loyalty-card-types:
+    get:
+      summary: Получение списка типов карт лояльности
+      tags:
+        - Прочее
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/LoyaltyCardTypeResponseCollection'
+  /countries:
+    get:
+      security:
+        - auth: []
+      summary: Получение списка стран
+      tags:
+        - Прочее
+      parameters:
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+      responses:
+        '200':
+          description: Массив объектов стран
+          schema:
+            $ref: '#/definitions/CountryResponseCollection'
+  /contacts:
+    get:
+      security:
+        - auth: []
+      summary: Получение списка контактов для приложения
+      tags:
+        - Прочее
+      responses:
+        '200':
+          description: Список контактов
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+  /assortment-brands:
+    get:
+      security:
+        - auth: []
+      summary: Получение списка брендов номенклатур
+      tags:
+        - Прочее
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/AssortmentBrandResponseCollection'
+  /catalogs:
+    get:
+      summary: Получение списка публичных каталогов
+      tags:
+        - Публичные каталоги
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+        - $ref: '#/parameters/Store/store_uuid_q'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/CatalogResponseCollection'
+  /assortments:
+    get:
+      summary: Получение списка номенклатур
+      tags:
+        - Номенклатуры
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/AssortmentResponseCollection'
+  '/assortments/{assortment_uuid}':
+    get:
+      summary: Получение номенклатуры
+      tags:
+        - Номенклатуры
+      parameters:
+        - $ref: '#/parameters/Assortment/uuid'
+      responses:
+        '200':
+          description: Объект
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/AssortmentResponse'
+            required:
+              - data
+  /assortments/search:
+    get:
+      summary: Поиск по нуменклатуре
+      tags:
+        - Номенклатуры
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Assortment/phrase'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/AssortmentResponseCollection'
+  /profile/favorite-assortments:
+    post:
+      security:
+        - auth: []
+      summary: Добавление номенклатуры в любимые продукты
+      tags:
+        - Номенклатуры
+      parameters:
+        - $ref: '#/parameters/ShoppingLists/assortment_uuid'
+      responses:
+        '204':
+          description: Номенклатура добавлена в любимые продукты
+  '/profile/favorite-assortments/{assortment_uuid}':
+    delete:
+      security:
+        - auth: []
+      summary: Удаление номенклатуры из любимых продуктов
+      tags:
+        - Номенклатуры
+      parameters:
+        - $ref: '#/parameters/Assortment/uuid'
+      responses:
+        '204':
+          description: Номенклатура удалена из любимых продуктов
+        '404':
+          description: Номенклатура не найдена в любимых продуктах
+  /rating-scores/assortments/clients:
+    get:
+      security:
+        - auth: []
+      summary: Поиск оценок номенклатур от клиентов
+      tags:
+        - Номенклатуры
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/RatingScoreForAssortmentResponseCollection'
+  /tags:
+    get:
+      summary: Получение списка тегов
+      tags:
+        - Управление тeгами
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/TagResponseCollection'
+  '/tags/{tag_uuid}':
+    get:
+      summary: Получение тега
+      tags:
+        - Управление тeгами
+      parameters:
+        - $ref: '#/parameters/Tag/uuid'
+      responses:
+        '200':
+          description: Объект
+          schema:
+            $ref: '#/definitions/TagResponse'
+  /tags/search:
+    get:
+      summary: Поиск тега
+      tags:
+        - Управление тeгами
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Tag/phrase'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/TagNameResponseCollection'
+  /profile:
+    get:
+      security:
+        - auth: []
+      summary: Получение профиля текущего клиента
+      tags:
+        - Профиль клиента
+      responses:
+        '200':
+          description: Объект
+          schema:
+            $ref: '#/definitions/ProfileResponse'
+    put:
+      security:
+        - auth: []
+      summary: Обновление профиля текущего клиента
+      tags:
+        - Профиль клиента
+      parameters:
+        - $ref: '#/parameters/Profile/phone'
+        - $ref: '#/parameters/Profile/name'
+        - $ref: '#/parameters/Profile/birth_date'
+        - $ref: '#/parameters/Profile/is_agree_with_diverse_food_promo'
+        - $ref: '#/parameters/Profile/email'
+        - $ref: '#/parameters/Profile/sex'
+        - $ref: '#/parameters/Profile/consent_to_service_newsletter'
+        - $ref: '#/parameters/Profile/consent_to_receive_promotional_mailings'
+        - $ref: '#/parameters/Profile/selected_store_user_uuid'
+      responses:
+        '200':
+          description: Объект
+          schema:
+            $ref: '#/definitions/ProfileResponse'
+  /profile/notifications:
+    get:
+      security:
+        - auth: []
+      summary: Получение уведомлений клиента
+      tags:
+        - Уведомления
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: '#/definitions/PaginationMeta'
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/NotificationResource'
+      parameters:
+        - $ref: '#/components/parameters/collectionsWhere'
+        - $ref: '#/components/parameters/collectionsOrderBy'
+        - $ref: '#/components/parameters/collectionsPage'
+        - $ref: '#/components/parameters/collectionsPerPage'
+  '/profile/notifications/{notification_id}/read':
+    parameters:
+      - schema:
+          type: string
+        name: notification_id
+        in: path
+        required: true
+    post:
+      summary: Read notification
+      tags:
+        - Notifications
+      responses:
+        '204':
+          description: No Content
+      operationId: post-profile-notifications-notification_id-read
+      parameters: []
+  /profile/notifications/read-all:
+    post:
+      summary: Read all notifications
+      tags:
+        - Notifications
+      responses:
+        '204':
+          description: No Content
+      operationId: post-profile-notifications-read-all
+  /profile/notifications/delete-all:
+    post:
+      summary: Delete all notifications
+      tags:
+        - Notifications
+      responses:
+        '204':
+          description: No Content
+      operationId: post-profile-notifications-delete-all
+  /profile/push-tokens:
+    post:
+      security:
+        - auth: []
+      summary: Save push token
+      tags:
+        - Push токены
+      responses:
+        '204':
+          description: No Content
+      parameters:
+        - in: body
+          name: token
+          description: Обьект
+          schema:
+            type: object
+            required:
+              - token
+            properties:
+              token:
+                type: string
+  '/profile/push-tokens/{token}':
+    delete:
+      security:
+        - auth: []
+      summary: Delete push token
+      tags:
+        - Push токены
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+        '403':
+          description: Forbidden
+  /stores:
+    get:
+      summary: Получение списка магазинов
+      tags:
+        - Магазины
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/StoreResponseCollection'
+  '/stores/{store_uuid}':
+    get:
+      summary: Получение магазина
+      parameters:
+        - $ref: '#/parameters/Store/uuid'
+      responses:
+        '200':
+          description: Объект
+          schema:
+            $ref: '#/definitions/StoreResponse'
+      tags:
+        - Магазины
+  '/stores/{store_uuid}/assortments':
+    get:
+      summary: Получение номенклатур магазина
+      tags:
+        - Магазины
+      parameters:
+        - $ref: '#/parameters/Store/uuid'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/AssortmentResponseCollection'
+  /profile/favorite-stores:
+    post:
+      security:
+        - auth: []
+      summary: Добавление магазина в избранное
+      tags:
+        - Магазины
+      parameters:
+        - $ref: '#/parameters/Store/store_uuid'
+      responses:
+        '204':
+          description: Магазин добавлен в избранное
+  '/profile/favorite-stores/{store_uuid}':
+    delete:
+      security:
+        - auth: []
+      summary: Удаление магазина из избранного
+      tags:
+        - Магазины
+      parameters:
+        - $ref: '#/parameters/Store/uuid'
+      responses:
+        '204':
+          description: Магазин удален из избранного
+  /profile/loyalty-cards:
+    get:
+      security:
+        - auth: []
+      summary: Получение списка карт текущего клиента
+      tags:
+        - Карты лояльности клиента
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/LoyaltyCardResponseCollection'
+  /profile/receipts:
+    get:
+      security:
+        - auth: []
+      summary: Получение списка чеков текущего клиента
+      tags:
+        - Чеки клиентa
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/ReceiptResponseCollection'
+  '/profile/receipts/{receipt_uuid}':
+    get:
+      security:
+        - auth: []
+      summary: Получение чека текущего клиента
+      tags:
+        - Чеки клиентa
+      parameters:
+        - $ref: '#/parameters/Receipt/uuid'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/ReceiptResponse'
+  '/profile/receipts/{receipt_uuid}/lines':
+    get:
+      security:
+        - auth: []
+      summary: Получение проданных позиций из чека текущего клиента
+      tags:
+        - Чеки клиентa
+      parameters:
+        - $ref: '#/parameters/Receipt/uuid'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/ReceiptLineResponseCollection'
+  '/profile/receipts/{receipt_uuid}/lines/{$receiptLine->uuid}/set-rating':
+    put:
+      security:
+        - auth: []
+      summary: Выставление оценки проданной позиции из чека текущего клиента
+      tags:
+        - Чеки клиентa
+      parameters:
+        - $ref: '#/parameters/Receipt/uuid'
+        - $ref: '#/parameters/ReceiptLine/uuid'
+        - $ref: '#/parameters/Receipt/value'
+        - $ref: '#/parameters/Receipt/comment'
+      responses:
+        '204':
+          description: Оценка сохранена
+  /profile/shopping-lists:
+    get:
+      security:
+        - auth: []
+      summary: Получение списков покупок
+      tags:
+        - Списки покупок
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+        - $ref: '#/parameters/Store/store_uuid_q'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/ShoppingListResponseCollection'
+    post:
+      security:
+        - auth: []
+      summary: Создание нового списка покупок
+      tags:
+        - Списки покупок
+      parameters:
+        - $ref: '#/parameters/ShoppingLists/name'
+        - $ref: '#/parameters/ShoppingLists/assortments_uuid'
+        - $ref: '#/parameters/ShoppingLists/assortments_quantity'
+        - $ref: '#/parameters/Store/store_uuid_q'
+      responses:
+        '200':
+          description: Объект
+          schema:
+            $ref: '#/definitions/ShoppingList'
+  '/profile/shopping-lists/{shopping_lists_uuid}':
+    get:
+      security:
+        - auth: []
+      summary: Получение списка покупок
+      tags:
+        - Списки покупок
+      parameters:
+        - $ref: '#/parameters/ShoppingLists/uuid'
+        - $ref: '#/parameters/Store/store_uuid_q'
+      responses:
+        '200':
+          description: Объект
+          schema:
+            $ref: '#/definitions/ShoppingList'
+    put:
+      security:
+        - auth: []
+      summary: Обновление списка покупок
+      tags:
+        - Списки покупок
+      parameters:
+        - $ref: '#/parameters/ShoppingLists/uuid'
+        - $ref: '#/parameters/ShoppingLists/name'
+        - $ref: '#/parameters/ShoppingLists/assortments_uuid'
+        - $ref: '#/parameters/ShoppingLists/assortments_quantity'
+        - $ref: '#/parameters/Store/store_uuid_q'
+      responses:
+        '200':
+          description: Объект
+          schema:
+            $ref: '#/definitions/ShoppingList'
+    delete:
+      security:
+        - auth: []
+      summary: Удаление списка покупок
+      tags:
+        - Списки покупок
+      parameters:
+        - $ref: '#/parameters/ShoppingLists/uuid'
+        - $ref: '#/parameters/Store/store_uuid_q'
+      responses:
+        '200':
+          description: Удаленный объект
+          schema:
+            $ref: '#/definitions/ShoppingList'
+  '/profile/shopping-lists/{shopping_lists_uuid}/assortments':
+    post:
+      security:
+        - auth: []
+      summary: Добавление номенклатуры в список покупок
+      tags:
+        - Списки покупок
+      parameters:
+        - $ref: '#/parameters/ShoppingLists/uuid'
+        - $ref: '#/parameters/ShoppingLists/assortment_uuid'
+        - $ref: '#/parameters/ShoppingLists/assortment_quantity'
+      responses:
+        '204':
+          description: Номенклатура добавлена в список покупок
+  '/profile/shopping-lists/{shopping_lists_uuid}/assortments/{assortment_uuid}':
+    delete:
+      security:
+        - auth: []
+      summary: Удаление номенклатуры из списка покупок
+      tags:
+        - Списки покупок
+      parameters:
+        - $ref: '#/parameters/ShoppingLists/uuid'
+        - $ref: '#/parameters/Assortment/uuid'
+      responses:
+        '204':
+          description: Номенклатура удалена из списка покупок
+        '404':
+          description: Номенклатура не найдена в списке покупок
+  /profile/shopping-cart/assortments:
+    get:
+      summary: Получение корзины
+      tags:
+        - Корзина
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/CartAssortmentResource'
+      operationId: get-profile-shopping-cart-assortments
+    delete:
+      summary: Очистка корзины
+      tags:
+        - Корзина
+      responses:
+        '204':
+          description: No Content
+          schema:
+            type: object
+            properties: {}
+      operationId: delete-profile-shopping-cart-assortments
+      parameters: []
+    post:
+      summary: Добавление товара в корзину
+      tags:
+        - Корзина
+      responses:
+        '204':
+          description: No Content
+          schema:
+            type: object
+            properties: {}
+      operationId: post-profile-shopping-cart-assortments
+      parameters:
+        - in: body
+          name: body
+          schema:
+            $ref: '#/definitions/StoreCartAssortmentRequest'
+  /profile/orders:
+    get:
+      summary: Получить список своих заказов
+      tags:
+        - Orders
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/OrderCollectionResource'
+              meta:
+                $ref: '#/definitions/PaginationMeta'
+            required:
+              - data
+              - meta
+        '403':
+          description: Forbidden
+          schema:
+            type: object
+            properties: {}
+      operationId: get-profile-orders
+    post:
+      summary: Создание заказа
+      tags:
+        - Orders
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/OrderResource'
+        '403':
+          description: Forbidden
+          schema:
+            type: object
+            properties: {}
+        '422':
+          description: Unprocessable Entity (WebDAV)
+          schema:
+            type: object
+            properties: {}
+      operationId: post-profile-orders
+      parameters:
+        - in: body
+          name: body
+          schema:
+            $ref: '#/definitions/OrderStoreRequest'
+  '/profile/orders/{orderId}':
+    parameters:
+      - type: string
+        name: orderId
+        in: path
+        required: true
+    get:
+      summary: Получить свой заказ
+      tags:
+        - Orders
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/OrderResourceWithRating'
+            required:
+              - data
+        '403':
+          description: Forbidden
+          schema:
+            type: object
+            properties: {}
+      operationId: get-profile-orders-orderId
+  '/profile/orders/{orderId}/set-status':
+    parameters:
+      - type: string
+        name: orderId
+        in: path
+        required: true
+    post:
+      summary: Обновить статус своего заказа
+      tags:
+        - Orders
+      responses:
+        '204':
+          description: No Content
+          schema:
+            type: object
+            properties: {}
+        '400':
+          description: Bad Request
+          schema:
+            type: object
+            properties: {}
+        '403':
+          description: Forbidden
+          schema:
+            type: object
+            properties: {}
+        '404':
+          description: Not Found
+          schema:
+            type: object
+            properties: {}
+      operationId: post-profile-orders-orderId-set-status
+  '/profile/shopping-cart/assortments/{assortment_id}':
+    parameters:
+      - type: string
+        name: assortment_id
+        in: path
+        required: true
+    get:
+      summary: Получение товара из корзины
+      tags:
+        - Корзина
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/CartAssortmentResource'
+            required:
+              - data
+      operationId: get-profile-shopping-cart-assortments-assortment_id
+    delete:
+      summary: Удаление товара из корзины
+      tags:
+        - Корзина
+      responses:
+        '204':
+          description: No Content
+          schema:
+            type: object
+            properties: {}
+      operationId: delete-profile-shopping-cart-assortments-assortment_id
+  /profile/shopping-cart/assortments/update:
+    post:
+      summary: Обновление товара корзины
+      tags:
+        - Корзина
+      responses:
+        '204':
+          description: No Content
+          schema:
+            type: object
+            properties: {}
+      operationId: post-profile-shopping-cart-assortments-update
+      parameters:
+        - in: body
+          name: body
+          schema:
+            $ref: '#/definitions/StoreCartAssortmentRequest'
+  /profile/orders/calculate:
+    post:
+      summary: Расчет заказа
+      tags:
+        - Orders
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/OrderResource'
+        '403':
+          description: Forbidden
+          schema:
+            type: object
+            properties: {}
+        '422':
+          description: Unprocessable Entity (WebDAV)
+          schema:
+            type: object
+            properties: {}
+      operationId: post-profile-orders-calculate
+      parameters:
+        - in: body
+          name: body
+          schema:
+            $ref: '#/definitions/OrderCalculateRequest'
+  /profile/delivery-addresses:
+    get:
+      summary: Список адресов клиента
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/DeliveryAddressResource'
+            required:
+              - data
+      operationId: get-profile-delivery-addresses
+      tags:
+        - Addresses
+    post:
+      summary: Создать адрес клиента
+      tags:
+        - Addresses
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/DeliveryAddressResource'
+            required:
+              - data
+      operationId: post-profile-delivery-addresses
+      parameters:
+        - in: body
+          name: body
+          schema:
+            $ref: '#/definitions/DeliveryAddressStoreRequest'
+  '/profile/delivery-addresses/{addressId}':
+    parameters:
+      - type: string
+        name: addressId
+        in: path
+        required: true
+    put:
+      summary: Обновить адрес клиента
+      tags:
+        - Addresses
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/DeliveryAddressResource'
+            required:
+              - data
+      operationId: put-profile-delivery-addresses-addressId
+      parameters:
+        - in: body
+          name: body
+          schema:
+            $ref: '#/definitions/DeliveryAddressStoreRequest'
+    delete:
+      summary: Удалить адрес клиента
+      tags:
+        - Addresses
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/DeliveryAddressResource'
+            required:
+              - data
+      operationId: delete-profile-delivery-addresses-addressId
+    get:
+      summary: Получить адрес клиента
+      tags:
+        - Addresses
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/DeliveryAddressResource'
+            required:
+              - data
+        '403':
+          description: Forbidden
+          schema:
+            type: object
+            properties: {}
+        '404':
+          description: Not Found
+          schema:
+            type: object
+            properties: {}
+      operationId: get-profile-delivery-addresses-addressId
+      parameters: []
+  /geocode:
+    get:
+      summary: Геокодирование
+      tags:
+        - Geocoding
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    providedBy:
+                      type: string
+                    latitude:
+                      type: number
+                    longitude:
+                      type: number
+                    bounds:
+                      type: object
+                      required:
+                        - south
+                        - west
+                        - north
+                        - east
+                      properties:
+                        south:
+                          type: number
+                        west:
+                          type: number
+                        north:
+                          type: number
+                        east:
+                          type: number
+                    streetNumber:
+                      type: string
+                    streetName:
+                      type: string
+                    postalCode:
+                      type: string
+                    locality:
+                      type: string
+                    timezone:
+                      type: string
+                    country:
+                      type: string
+                    countryCode:
+                      type: string
+                    adminLevels:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          code:
+                            type: string
+                          level:
+                            type: integer
+                        required:
+                          - name
+                          - code
+                          - level
+                  required:
+                    - providedBy
+                    - latitude
+                    - longitude
+                    - bounds
+                    - streetNumber
+                    - streetName
+                    - postalCode
+                    - locality
+                    - timezone
+                    - country
+                    - countryCode
+                    - adminLevels
+            required:
+              - data
+      operationId: get-geocode
+      parameters:
+        - type: string
+          in: query
+          name: address
+          required: true
+          minLength: 5
+          maxLength: 512
+  /geocode/reverse:
+    get:
+      summary: Геокодирование по координатам
+      tags:
+        - Geocoding
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    providedBy:
+                      type: string
+                    latitude:
+                      type: number
+                    longitude:
+                      type: number
+                    bounds:
+                      type: object
+                      required:
+                        - south
+                        - west
+                        - north
+                        - east
+                      properties:
+                        south:
+                          type: number
+                        west:
+                          type: number
+                        north:
+                          type: number
+                        east:
+                          type: number
+                    streetNumber:
+                      type: string
+                    streetName:
+                      type: string
+                    postalCode:
+                      type: string
+                    locality:
+                      type: string
+                    timezone:
+                      type: string
+                    country:
+                      type: string
+                    countryCode:
+                      type: string
+                    adminLevels:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          code:
+                            type: string
+                          level:
+                            type: integer
+                        required:
+                          - name
+                          - code
+                          - level
+                  required:
+                    - providedBy
+                    - latitude
+                    - longitude
+                    - bounds
+                    - streetNumber
+                    - streetName
+                    - postalCode
+                    - locality
+                    - timezone
+                    - country
+                    - countryCode
+                    - adminLevels
+            required:
+              - data
+      operationId: get-reverse
+      parameters:
+        - type: string
+          in: query
+          name: latitude
+          required: true
+          minLength: 5
+          maxLength: 15
+        - type: string
+          in: query
+          name: longitude
+          required: true
+          minLength: 5
+          maxLength: 15
+  /promo-descriptions:
+    get:
+      summary: Получение списка описаний акций
+      tags:
+        - Акции. Описание акций
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/PromoDescriptionResponseCollection'
+  /profile/active-promo-favorite-assortments:
+    get:
+      summary: 'Получение списка продуктов по акции "Любимый продукт"'
+      tags:
+        - Акции. Любимый продукт
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/ClientActivePromoFavoriteAssortmentResource'
+              meta:
+                $ref: '#/definitions/PaginationMeta'
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+      operationId: get-profile-active-promo-favorite-assortments
+  /profile/promo-favorite-assortment-variants:
+    get:
+      summary: Получение списка акционных вариантов
+      tags:
+        - Акции. Любимый продукт
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/ClientPromoFavoriteAssortmentVariantResource'
+              meta:
+                $ref: '#/definitions/PaginationMeta'
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+      operationId: get-profile-promo-favorite-assortment-variants
+  '/profile/promo-favorite-assortment-variants/{$variantUuid}/activate':
+    parameters:
+      - type: string
+        name: $variantUuid
+        in: path
+        required: true
+    post:
+      summary: Активация акционного варианта
+      tags:
+        - Акции. Любимый продукт
+      responses:
+        '204':
+          description: No Content
+          schema:
+            type: object
+            properties: {}
+        '400':
+          description: Bad Request
+          schema:
+            type: object
+            properties: {}
+        '403':
+          description: Forbidden
+          schema:
+            type: object
+            properties: {}
+        '404':
+          description: Not Found
+          schema:
+            type: object
+            properties: {}
+      operationId: post-profile-promo-favorite-assortment-variants-$variantUuid-activate
+      parameters:
+        - in: body
+          name: body
+          schema:
+            type: object
+            properties:
+              assortment_uuid:
+                type: string
+                format: uuid
+  '/profile/orders/products/{orderProductUuid}/set-rating':
+    parameters:
+      - type: string
+        name: orderProductUuid
+        in: path
+        required: true
+    post:
+      summary: Выставление оценки проданной позиции заказа
+      tags:
+        - Orders
+      responses:
+        '204':
+          description: Оценка сохранена
+          schema:
+            type: object
+            properties: {}
+      operationId: post-profile-orders-products-orderProductUuid-set-rating
+      parameters:
+        - in: body
+          name: body
+          schema:
+            type: object
+            properties:
+              value:
+                type: integer
+              comment:
+                type: string
+                x-nullable: true
+            required:
+              - value
+              - comment
+  /profile/promo-diverse-food-stats:
+    get:
+      summary: Получение текущих показателей пользователя
+      tags:
+        - Акции. Разнообразное питание
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/PromoDiverseFoodClientStatResource'
+      operationId: get-profile-promo-diverse-food-stats
+      description: 'Получение текущих показателей пользователя по акции "Разнообразное питание"'
+  '/profile/promo-diverse-food-stats/{statUuid}':
+    parameters:
+      - type: string
+        name: statUuid
+        in: path
+        required: true
+    get:
+      summary: Получение конкретного показателя пользователя
+      tags:
+        - Акции. Разнообразное питание
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/PromoDiverseFoodClientStatResource'
+            required:
+              - data
+      operationId: get-profile-promo-diverse-food-stats-$stat--uuid
+      description: 'Получение конкретного показателей пользователя по акции "Разнообразное питание"'
+  /profile/promo-diverse-food-discounts:
+    get:
+      summary: Получение скидок пользователя
+      tags:
+        - Акции. Разнообразное питание
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/PromoDiverseFoodClientDiscountResource'
+              meta:
+                $ref: '#/definitions/PaginationMeta'
+      operationId: get-profile-promo-diverse-food-discounts
+      description: |-
+        Получение скидок пользователя по акции "Разнообразное питание"
+        Для получения текущей скидки необходимо добавить два фильтра: `start_at < now()` AND `now() < end_at`
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+  '/profile/promo-diverse-food-discounts/{discountUuid}':
+    parameters:
+      - type: string
+        name: discountUuid
+        in: path
+        required: true
+    get:
+      summary: Получение конкретной скидки пользователя
+      tags:
+        - Акции. Разнообразное питание
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/PromoDiverseFoodClientDiscountResource'
+            required:
+              - data
+        '403':
+          description: Forbidden
+          schema:
+            type: object
+            properties: {}
+        '404':
+          description: Not Found
+          schema:
+            type: object
+            properties: {}
+      operationId: get-profile-promo-diverse-food-discounts-$discount--uuid
+      description: 'Получение конкретной скидки пользователя по акции "Разнообразное питание"'
+  /promo-diverse-food-settings:
+    get:
+      summary: Получить список опций акции
+      tags:
+        - Акции. Разнообразное питание
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/PromoDiverseFoodSettingsResource'
+            required:
+              - data
+      operationId: get-promo-diverse-food-settings
+      description: Получить список опций акции (Получить список возможных скидок)
+  '/promo-diverse-food-settings/{settingUuid}':
+    parameters:
+      - type: string
+        name: settingUuid
+        in: path
+        required: true
+    get:
+      summary: Получить опцию акции
+      tags:
+        - Акции. Разнообразное питание
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/PromoDiverseFoodSettingsResource'
+            required:
+              - data
+        '404':
+          description: Not Found
+          schema:
+            type: object
+            properties: {}
+      operationId: get-promo-diverse-food-settings-settingUuid
+  /profile/promo-diverse-food-settings/future-level:
+    get:
+      summary: Получить будущую активную опцию акции
+      tags:
+        - Акции. Разнообразное питание
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/PromoDiverseFoodSettingsResource'
+            required:
+              - data
+      operationId: get-profile-promo-diverse-food-settings-my-level
+      description: "Получить опцию акции клиента, которая будет активна в будущем месяце при текущих показателях. \nЕсли таковая не обнаружена возвращается первая возможная"
+  /profile/credit-cards:
+    get:
+      summary: Get client credit cards
+      tags:
+        - Credit cards
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/CreditCardResource'
+            required:
+              - data
+      operationId: get-profile-credit-cards
+  '/profile/credit-cards/{cardUuid}':
+    parameters:
+      - type: string
+        name: cardUuid
+        in: path
+        required: true
+    get:
+      summary: Get client credit card
+      tags:
+        - Credit cards
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/CreditCardResource'
+            required:
+              - data
+        '404':
+          description: Not Found
+          schema:
+            type: object
+      operationId: get-profile-credit-cards-cardUuid
+    delete:
+      summary: Delete client credit card
+      tags:
+        - Credit cards
+      operationId: delete-profile-credit-cards-cardUuid
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/CreditCardResource'
+            required:
+              - data
+        '404':
+          description: Not Found
+          schema:
+            type: object
+            properties: {}
+      description: Delete client credit card (unlink card)
+  /profile/credit-cards/link:
+    get:
+      summary: Get data to link card to client
+      tags:
+        - Credit cards
+      parameters:
+        - type: string
+          format: uuid
+          in: query
+          name: store_uuid
+          required: false
+          description: 'Store for connecting with'
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              form_url:
+                type: string
+                description: Utl to the link form for the client
+              order_id:
+                type: string
+                description: Generated order id returned from an bank-acquirer
+            required:
+              - form_url
+              - order_id
+        '400':
+          description: Bad Request
+          schema:
+            type: object
+            properties: {}
+      operationId: get-profile-credit-cards-link
+      description: Get data to link card to client
+  /profile/credit-cards/link/success:
+    get:
+      summary: Set success status of a linking card process
+      tags:
+        - Credit cards
+      responses:
+        '204':
+          description: No Content
+          schema:
+            type: object
+            properties: {}
+        '400':
+          description: Bad Request
+          schema:
+            type: object
+            properties: {}
+        '422':
+          description: Unprocessable Entity (WebDAV)
+          schema:
+            type: object
+            properties: {}
+      operationId: get-profile-credit-cards-link-success
+      parameters:
+        - type: string
+          in: query
+          name: orderId
+          required: true
+          description: 'Order ID returned from the bank-acquirer link-card form (Or returned from the #get-profile-credit-cards-link)'
+      description: |-
+        Set success status of a linking card process.
+        This method should be called after successful card binding on the acquiring bank side
+    parameters: []
+  /profile/credit-cards/link/error:
+    get:
+      summary: Set error status of a linking card process
+      tags:
+        - Credit cards
+      responses:
+        '204':
+          description: No Content
+          schema:
+            type: object
+            properties: {}
+        '400':
+          description: Bad Request
+          schema:
+            type: object
+            properties: {}
+        '422':
+          description: Unprocessable Entity (WebDAV)
+          schema:
+            type: object
+            properties: {}
+      operationId: get-profile-credit-cards-link-error
+      parameters:
+        - type: string
+          in: query
+          name: orderId
+          required: true
+          description: 'Order ID returned from the bank-acquirer link-card form (Or returned from the #get-profile-credit-cards-link)'
+      description: |-
+        Set error status of a linking card process.
+        This method should be called after unsuccessful card binding on the acquiring bank side
+    parameters: []
+  /profile/promotion/in-the-shop:
+    get:
+      security:
+        - auth: []
+      summary: 'Данные по акции "Я в магазине"'
+      tags:
+        - Акции. Я в магазине
+      parameters:
+        - $ref: '#/parameters/Store/uuid'
+      operationId: get-profile-promotion-in-the-shop
+      responses:
+        '200':
+          description: ОК
+          schema:
+            $ref: '#/definitions/PromotionInTheShopResponseCollection'
+    post:
+      security:
+        - auth: []
+      summary: 'Добавление акции "Я в магазине"'
+      tags:
+        - Акции. Я в магазине
+      parameters:
+        - $ref: '#/parameters/Store/uuid'
+      operationId: post-profile-promotion-in-the-shop
+      responses:
+        '204':
+          description: No Content
+  '/profile/shopping-cart/fill-from-shopping-list/{shoppingListUuid}':
+    parameters:
+      - type: string
+        name: shoppingListUuid
+        in: path
+        required: true
+    post:
+      summary: Заполнить корзину товарами из списка покупок
+      tags:
+        - Корзина
+      responses:
+        '204':
+          description: No Content
+          schema:
+            type: object
+            properties: {}
+        '403':
+          description: Forbidden
+          schema:
+            type: object
+            properties: {}
+      operationId: post-profile-shopping-cart-fill-from-shopping-list-shoppingListUuid
+  '/profile/shopping-cart/fill-from-order/{orderUuid}':
+    parameters:
+      - type: string
+        name: orderUuid
+        in: path
+        required: true
+    post:
+      summary: Заполнить корзину товарами из заказа
+      tags:
+        - Корзина
+      responses:
+        '204':
+          description: No Content
+          schema:
+            type: object
+            properties: {}
+        '403':
+          description: Forbidden
+          schema:
+            type: object
+            properties: {}
+      operationId: post-profile-shopping-cart-fill-from-order-orderUuid
+  /profile/purchases-sum:
+    get:
+      summary: Получить сумму всех покупок за N дней
+      tags:
+        - Профиль клиента
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: number
+            required:
+              - data
+      operationId: get-profile-purchases-sum
+      parameters:
+        - type: integer
+          in: query
+          name: days
+          required: true
+          minimum: 1
+          maximum: 30
+  /stores/find-nearby:
+    get:
+      summary: Find neabry stores
+      tags:
+        - Магазины
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/StoreResponse'
+      operationId: get-stores-find-nearby
+      parameters:
+        - type: number
+          in: query
+          name: latitude
+          minimum: -90
+          maximum: 90
+          required: true
+        - type: number
+          in: query
+          name: longitude
+          required: true
+          minimum: -180
+          maximum: 180
+        - type: integer
+          in: query
+          name: limit
+          default: 5
+        - type: integer
+          in: query
+          name: max_distance_meters
+          minimum: 100
+          maximum: 100000
+          default: 10000
+  /vacancy:
+    get:
+      security:
+        - auth: []
+      summary: Получение списка вакансий
+      tags:
+        - Получение списка вакансий
+      description: Доступно без авторизации
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/VacancyResponseCollection'
+  /onboarding:
+    get:
+      security:
+        - auth: []
+      summary: Получение списка элементов онбординга
+      tags:
+        - Онбординг
+      description: Доступно без авторизации
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/OnboardingResponseCollection'
+  /social:
+    get:
+      security:
+        - auth: []
+      summary: Получение списка элементов соц.сети
+      tags:
+        - Соц.сети
+      description: Доступно без авторизации
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+      responses:
+        '200':
+          description: Массив объектов
+          schema:
+            $ref: '#/definitions/SocialResponseCollection'
+  /profile/client-bonus-transactions:
+    get:
+      summary: Get bonus transactions
+      tags:
+        - Bonus transactions
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ClientBonusTransactionCollectionResponse'
+      operationId: get-profile-client-bonus-transactions
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+  '/profile/client-bonus-transactions/{transaction-uuid}':
+    parameters:
+      - type: string
+        name: transaction-uuid
+        in: path
+        required: true
+    get:
+      summary: Get bonus transaction
+      tags:
+        - Bonus transactions
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/ClientBonusTransactionResource'
+            required:
+              - data
+        '404':
+          description: Not Found
+          schema:
+            type: object
+            properties: {}
+      operationId: get-profile-client-bonus-transactions-transaction-uuid
+      parameters: []
+  /profile/purchases-month:
+    get:
+      summary: Получить покупки за месяц
+      tags:
+        - Профиль клиента
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/PurchaseLineResource'
+              meta:
+                $ref: '#/definitions/PaginationMeta'
+      operationId: get-profile-purchases-month
+      description: Вы можете использовать для фильтрации по оцененным товаром поле `is_rated` (через фильтрацию `where`)
+  /meal-receipts:
+    get:
+      summary: Get meal-receipts
+      tags:
+        - Meal receipts
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/MealReceiptResource'
+              meta:
+                $ref: '#/definitions/PaginationMeta'
+      operationId: get-meal-receipt
+  /meal-receipts-unique-sections:
+    get:
+      summary: Get meal-receipts unique sections
+      tags:
+        - Meal receipts
+      parameters:
+        - $ref: '#/parameters/Pagination/page'
+        - $ref: '#/parameters/Pagination/per_page'
+        - $ref: '#/parameters/Pagination/where'
+        - $ref: '#/parameters/Pagination/order_by'
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - section
+                  properties:
+                    section:
+                      type: string
+              meta:
+                $ref: '#/definitions/PaginationMeta'
+      operationId: get-meal-receipt-unique-sections
+  '/meal-receipts/{meal_receipt_iuud}':
+    parameters:
+      - type: string
+        name: meal_receipt_uuid
+        in: path
+        required: true
+    get:
+      summary: Get meal-receipt
+      tags:
+        - Meal receipts
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/MealReceiptResource'
+      operationId: get-meal-receipt-meal_receipt_uuid
+      parameters: []
+  '/meal-receipts/{meal_receipt_iuud}/reaction':
+    parameters:
+      - type: string
+        name: meal_receipt_uuid
+        in: path
+        required: true
+    post:
+      summary: Create meal-receipt reaction
+      tags:
+        - Meal receipts
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/MealReceiptResource'
+      operationId: post-meal-receipts
+      parameters:
+        - in: body
+          name: body
+          schema:
+            type: object
+            properties:
+              is_positive:
+                type: boolean
+            required:
+              - is_positive
+parameters:
+  Tag:
+    uuid:
+      name: tag_uuid
+      type: uuid
+      in: path
+      description: Идентификатор тега
+      required: true
+    name:
+      name: name
+      type: string
+      in: body
+      description: Имя тега
+      required: true
+    phrase:
+      name: phrase
+      type: string
+      in: query
+      description: Фраза по которой поиск
+      required: true
+  ShoppingLists:
+    uuid:
+      name: shopping_lists_uuid
+      type: uuid
+      in: path
+      description: Идентификатор списка покупок
+      required: true
+    name:
+      name: name
+      type: string
+      in: body
+      description: Имя списка покупок
+    assortments_uuid:
+      name: 'assortments[].uuid'
+      type: uuid
+      in: body
+      description: Идентификатор номенклатуры
+      required: true
+    assortments_quantity:
+      name: 'assortments[].quantity'
+      type: integer
+      in: body
+      description: Количество номенклатуры
+      required: true
+    assortment_uuid:
+      name: assortment_uuid
+      type: uuid
+      in: body
+      description: Идентификатор номенклатуры
+      required: true
+    assortment_quantity:
+      name: quantity
+      type: integer
+      in: body
+      description: Количество номенклатуры
+      required: true
+  Store:
+    uuid:
+      name: store_uuid
+      type: uuid
+      in: path
+      description: Идентификатор магазина
+      required: true
+    store_uuid:
+      name: store_uuid
+      type: uuid
+      in: body
+      description: Идентификатор магазина
+      required: true
+    store_uuid_q:
+      name: store_uuid
+      type: uuid
+      in: query
+      description: Идентификатор магазина
+      required: false
+  Pagination:
+    page:
+      name: page
+      type: integer
+      in: query
+      description: Номер страницы
+    per_page:
+      name: per_page
+      type: integer
+      in: query
+      description: Количество элементов на странице
+    where:
+      name: where
+      in: query
+      description: Условия фильтрации выборки
+    order_by:
+      name: order_by
+      in: query
+      description: Условия сортировки выборки
+  ReceiptLine:
+    uuid:
+      name: receipt_line_uuid
+      type: uuid
+      in: path
+      description: Идентификатор проданной позиции из чека
+      required: true
+  Receipt:
+    uuid:
+      name: receipt_uuid
+      type: uuid
+      in: path
+      description: Идентификатор чека
+      required: true
+    value:
+      name: value
+      type: integer
+      in: body
+      description: Оценка
+      required: true
+    comment:
+      name: comment
+      type: string
+      in: body
+      description: Комментарий к оценке
+      x-nullable: true
+  LoyaltyCards:
+    uuid:
+      name: loyalty_card_uuid
+      type: uuid
+      in: path
+      description: Идентификатор карты лояльности
+      required: true
+    loyalty_card_type_uuid:
+      name: loyalty_card_type_uuid
+      type: uuid
+      in: body
+      description: Идентификатор типа карт лояльности
+      required: true
+    loyalty_card_number:
+      name: loyalty_card_number
+      type: integer
+      in: body
+      description: Номер карты лояльности
+      required: true
+  Profile:
+    phone:
+      name: phone
+      type: string
+      in: body
+      description: Номер телефона клиента
+      required: true
+    name:
+      name: name
+      type: string
+      in: body
+      description: Имя клиента
+      x-nullable: true
+    email:
+      name: email
+      type: string
+      in: body
+      description: Email клиента
+      x-nullable: true
+    sex:
+      name: sex
+      type: string
+      in: body
+      description: Пол клиента
+      enum:
+        - male
+        - female
+      x-nullable: true
+    birth_date:
+      name: birth_date
+      type: dateTime
+      in: body
+      description: Дата рождения клиента
+      x-nullable: true
+    is_agree_with_diverse_food_promo:
+      name: is_agree_with_diverse_food_promo
+      type: boolean
+      in: body
+      description: 'Согласие клиента на участие в акции "Разнообразное питание"'
+    consent_to_service_newsletter:
+      name: consent_to_service_newsletter
+      type: boolean
+      in: body
+      description: Согласие на сервисную рассылку
+    consent_to_receive_promotional_mailings:
+      name: consent_to_receive_promotional_mailings
+      type: boolean
+      in: body
+      description: Согласие на получение рекламной рассылки
+    selected_store_user_uuid:
+      name: selected_store_user_uuid
+      type: string
+      in: body
+      description: Выбранный магазин
+      x-nullable: true
+    app_version:
+      name: app_version
+      type: string
+      in: body
+      description: Версия приложения
+      x-nullable: true
+  Assortment:
+    phrase:
+      name: phrase
+      type: string
+      in: query
+      description: Фраза по которой поиск
+      required: true
+    uuid:
+      name: assortment_uuid
+      type: uuid
+      in: path
+      description: Идентификатор номенклатуры
+      required: true
+  Auth:
+    phone:
+      name: phone
+      type: string
+      in: body
+      description: Номер телефона клиента
+      required: true
+    loyalty_card_type_uuid:
+      name: loyalty_card_type_uuid
+      type: uuid
+      in: body
+      description: Идентификатор типа карт лояльности
+      required: true
+    loyalty_card_number:
+      name: loyalty_card_number
+      type: integer
+      in: body
+      description: Номер карты лояльности
+      required: true
+    old_phone_last_four_digits:
+      name: old_phone_last_four_digits
+      type: integer
+      in: body
+      description: Последние 4 цифры старого номера телефона
+      required: true
+    new_phone:
+      name: new_phone
+      type: string
+      in: body
+      description: Новый номер телефона клиента
+      required: true
+    code:
+      name: code
+      type: integer
+      in: body
+      description: Код из смс
+      x-nullable: true
+definitions:
+  ProfileResponse:
+    description: Профиль клиента
+    type: object
+    properties:
+      data:
+        type: object
+        properties:
+          uuid:
+            description: Идентификатор
+            type: uuid
+            example: 8bbd46f9-805b-4098-8ae1-da948b65219a
+          phone:
+            description: Номер телефона клиента
+            type: string
+            example: '+79515342323'
+          name:
+            description: Имя клиента
+            type: string
+            x-nullable: true
+            example: Петр Ильич
+          created_at:
+            description: Дата создания
+            type: dateTime
+            example: '2018-09-18 00:29:11-04'
+          email:
+            type: string
+            x-nullable: true
+          sex:
+            type: string
+            x-nullable: true
+          birth_date:
+            type: string
+            x-nullable: true
+          is_agree_with_diverse_food_promo:
+            type: boolean
+          consent_to_service_newsletter:
+            type: boolean
+          consent_to_receive_promotional_mailings:
+            type: boolean
+          selected_store_user_uuid:
+            type: string
+            x-nullable: true
+          selected_store_address:
+            type: string
+            x-nullable: true
+          bonus_balance:
+            type: integer
+          app_version:
+            type: string
+          filled_profile_bonuses_added:
+            type: boolean
+  StoreResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            uuid:
+              description: Идентификатор
+              type: uuid
+              example: 8bdc223c-fae8-4503-b2fc-94084be26c82
+            brand_name:
+              description: Наименование магазина
+              type: string
+              x-nullable: true
+              example: Пятерочка
+            Inn:
+              description: ИНН магазина
+              type: string
+              x-nullable: true
+              example: 0
+            work_hours_from:
+              description: Время работы от
+              type: time
+              x-nullable: true
+              example: '09:00'
+            work_hours_till:
+              description: Время работы до
+              type: time
+              x-nullable: true
+              example: '19:00'
+            phone:
+              description: Телефон
+              type: string
+            has_parking:
+              description: Есть парковка
+              type: boolean
+            has_ready_meals:
+              description: Есть готовая еда
+              type: boolean
+            has_atms:
+              description: Есть банкоматы
+              type: boolean
+            image:
+              description: Изображение магазина
+              type: object
+              x-nullable: true
+              properties:
+                uuid:
+                  description: Идентификатор файла
+                  type: string
+                path:
+                  description: Путь до файла
+                  type: string
+                thumbnails:
+                  type: object
+                  properties:
+                    50x50:
+                      description: Путь до превью
+                      type: string
+            address_latitude:
+              description: Широта расположения
+              type: number
+              x-nullable: true
+              example: 34
+            address_longitude:
+              description: Долгота расположения
+              type: number
+              x-nullable: true
+              example: 67
+            loyalty_card_types:
+              description: Массив типов карт
+              type: array
+              items:
+                type: object
+                properties:
+                  uuid:
+                    description: Идентификатор
+                    type: uuid
+                    example: 8c217b9b-eb2d-4d14-ae5d-5bd79f899fb8
+            address:
+              description: Адрес магазина
+              type: string
+              x-nullable: true
+              example: '392730, Орловская область, город Ногинск, пер. Косиора, 92'
+            is_favorite:
+              description: Избранный магазин?
+              type: boolean
+              example: true
+      meta:
+        type: object
+        properties:
+          current_page:
+            description: Номер текущей страницы
+            type: integer
+            example: 1
+          from:
+            description: С какого номера элементы на выбранной странице
+            type: integer
+            example: 1
+          last_page:
+            description: Номер последней страницы с данными
+            type: integer
+            example: 3
+          per_page:
+            description: Количество элементов на странице
+            type: integer
+            example: 10
+          to:
+            description: До какого номера элементы на выбранной странице
+            type: integer
+            example: 10
+          total:
+            description: Суммарное количество элементов в выборке
+            type: integer
+            example: 27
+  StoreResponse:
+    description: Магазин
+    type: object
+    properties:
+      data:
+        type: object
+        properties:
+          uuid:
+            description: Идентификатор
+            type: uuid
+            example: 8bbd46f9-805b-4098-8ae1-da948b65219a
+          brand_name:
+            description: Наименование магазина
+            type: string
+            example: Гослинг Веар
+          organization_name:
+            description: Наименование организации
+            type: string
+            example: ОАО СтройРечИнфоСнос
+          loyalty_card_types:
+            description: Массив типов карт
+            type: array
+            items:
+              type: object
+              properties:
+                uuid:
+                  description: Идентификатор типа карт
+                  type: uuid
+                  example: 8bd639e6-17dc-4b53-aea8-39688d2b2304
+          address:
+            description: Адрес магазина
+            type: string
+            x-nullable: true
+            example: '392730, Орловская область, город Ногинск, пер. Косиора, 92'
+          work_hours_from:
+            description: Время работы от
+            type: time
+            x-nullable: true
+            example: '09:00'
+          work_hours_till:
+            description: Время работы до
+            type: time
+            x-nullable: true
+            example: '19:00'
+          phone:
+            description: Телефон
+            type: string
+          has_parking:
+            description: Есть парковка
+            type: boolean
+          has_ready_meals:
+            description: Есть готовая еда
+            type: boolean
+          has_atms:
+            description: Есть банкоматы
+            type: boolean
+          image:
+            description: Изображение магазина
+            type: object
+            x-nullable: true
+            properties:
+              uuid:
+                description: Идентификатор файла
+                type: string
+              path:
+                description: Путь до файла
+                type: string
+              thumbnails:
+                type: object
+                properties:
+                  50x50:
+                    description: Путь до превью
+                    type: string
+          is_favorite:
+            description: Избранный магазин?
+            type: boolean
+            example: true
+          distance:
+            type: integer
+            description: Distance to a store in meters (`find-nearby` method)
+  TokenResponse:
+    description: Токен
+    type: object
+    properties:
+      token:
+        description: токен
+        type: uuid
+        example: 8bbd46f9-805b-4098-8ae1-da948b65219a
+  CodeResponse:
+    description: Отправка СМС
+    type: object
+    properties:
+      message:
+        description: Уведомление
+        type: string
+        example: Authentication code was successfully sent
+  LoyaltyCardTypeResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            uuid:
+              description: Идентификатор
+              type: uuid
+              example: 8c217b9b-eb2d-4d14-ae5d-5bd79f899fb8
+            name:
+              description: Наименование типа карт лояльности
+              type: string
+              example: Пятерочка
+            discount_percent:
+              description: Скидка
+              type: integer
+              example: 3
+            logo_file_uuid:
+              description: Идентификатор файла логотипа карты
+              type: uuid
+              example: 8c217a42-1a5b-4ee1-abc5-c21bccc70745
+            logo_file_path:
+              description: Путь до файла логотипа карты
+              type: string
+              example: loyalty-card-type-logo/Qjaen29fO3CLjaMVvtRcrcobCHWn5oZ0kKA6ivyW.png
+            created_at:
+              description: Дата создания
+              type: dateTime
+              example: '2018-10-28 15:19:16-04'
+      meta:
+        properties:
+          current_page:
+            description: Номер текущей страницы
+            type: integer
+            example: 1
+          from:
+            description: С какого номера элементы на выбранной странице
+            type: integer
+            example: 1
+          last_page:
+            description: Номер последней страницы с данными
+            type: integer
+            example: 3
+          per_page:
+            description: Количество элементов на странице
+            type: integer
+            example: 10
+          to:
+            description: До какого номера элементы на выбранной странице
+            type: integer
+            example: 10
+          total:
+            description: Суммарное количество элементов в выборке
+            type: integer
+            example: 27
+  CountryResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              description: Идентификатор
+              type: string
+              example: AU
+            name:
+              description: Наименование страны
+              type: string
+              example: Австралия
+  CatalogResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            uuid:
+              description: Идентификатор
+              type: uuid
+              example: fc6ce5f1-b6db-4cf9-8318-bbb3efbb64b1
+            catalog_uuid:
+              description: Идентификатор родительского каталога
+              type: uuid
+              x-nullable: true
+              example: b4c8e3ff-4797-4dbc-8c3e-a81ec192bb92
+            catalog_name:
+              description: Наименование родительского каталога
+              type: string
+              x-nullable: true
+              example: Вода
+            name:
+              description: Наименование каталога
+              type: string
+              example: Бутилированная вода
+            level:
+              description: Уровень каталога
+              type: integer
+              example: 1
+            assortments_count:
+              description: Количество номенклатур в каталоге
+              type: integer
+              example: 10
+            sort_number:
+              description: Пользовательская сортировка
+              type: integer
+              example: 10
+            is_final_level:
+              description: Является ли конечным каталогом
+              type: boolean
+              example: true
+            assortments_count_in_store:
+              description: Количество номенклатур в каталоге в магазине
+              type: integer
+              example: 10
+            assortments_properties_in_store:
+              description: Идентификаторы доступных характеристик
+              type: array
+              items:
+                type: string
+            assortments_tags_in_store:
+              description: Идентификаторы доступных тегов
+              type: array
+              items:
+                type: string
+      meta:
+        properties:
+          current_page:
+            description: Номер текущей страницы
+            type: integer
+            example: 1
+          from:
+            description: С какого номера элементы на выбранной странице
+            type: integer
+            example: 1
+          last_page:
+            description: Номер последней страницы с данными
+            type: integer
+            example: 3
+          per_page:
+            description: Количество элементов на странице
+            type: integer
+            example: 10
+          to:
+            description: До какого номера элементы на выбранной странице
+            type: integer
+            example: 10
+          total:
+            description: Суммарное количество элементов в выборке
+            type: integer
+            example: 27
+  AssortmentResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            uuid:
+              description: Идентификатор
+              type: uuid
+              example: fc6ce5f1-b6db-4cf9-8318-bbb3efbb64b1
+            catalog_uuid:
+              description: Идентификатор каталога СМАРТ
+              type: uuid
+              example: b4c8e3ff-4797-4dbc-8c3e-a81ec192bb92
+            catalog_name:
+              description: Наименование каталога СМАРТ
+              type: string
+              example: Бутилированная вода
+            name:
+              description: Наименование товара
+              type: string
+              example: 1л. Пэт Минеральная вода
+            assortment_brand_uuid:
+              description: Идентификатор бренда номенклатур
+              type: string
+              example: fc6ce5f1-b6db-4cf9-8318-bbb3efbb64b1
+            assortment_brand_name:
+              description: Имя бренда номенклатур
+              type: string
+              example: Вкуснотеево
+            barcodes:
+              description: Штрих код
+              type: array
+              example:
+                - 5449000000286
+                - 5449000000286
+            short_name:
+              description: Короткое наименование номенклатуры
+              type: string
+              example: Минеральная вода
+            assortment_unit_id:
+              description: Короткое наименование номенклатуры
+              type: string
+              example: piece
+            weight:
+              description: Масса в граммах
+              type: number
+              example: 1203
+            volume:
+              description: Объем в мм кубических
+              type: number
+              example: 125
+            rating:
+              description: Значение рейтинга
+              type: number
+              x-nullable: true
+              example: 2
+            images:
+              description: Массив изображений
+              type: array
+              items:
+                properties:
+                  uuid:
+                    description: Идентификатор изображения
+                    type: uuid
+                    example: fc6ce5f1-b6db-4cf9-8318-bbb3efbb64b1
+                  path:
+                    description: Путь до файла
+                    type: string
+                    example: assortment-image/jrXQvlUIvHVYxqt7P1OEGCNqIzJIqjxyBwn5fE1x.png
+                  thumbnails:
+                    properties:
+                      50x50:
+                        description: Путь до превью
+                        type: string
+                        example: thumbnails/assortment-image/50x50/jrXQvlUIvHVYxqt7P1OEGCNqIzJIqjxyBwn5fE1x.png
+            manufacturer:
+              description: Производитель
+              type: string
+              example: ООО Ромашка
+              x-nullable: true
+            is_favorite:
+              description: Любимый продукт?
+              type: boolean
+              example: true
+            is_promo_favorite:
+              description: 'Любимый продукт по акции "Любимый продукт"?'
+              type: boolean
+              example: true
+            tags:
+              description: Массив тегов
+              type: array
+              items:
+                properties:
+                  name:
+                    description: Имя тега
+                    type: string
+                    example: ЗОЖ
+            current_price:
+              description: Текущая цена
+              type: number
+            products_quantity:
+              type: number
+            price_with_discount:
+              type: number
+            discount_type:
+              type: string
+            discount_type_color:
+              type: string
+            discount_type_name:
+              type: string
+            has_yellow_price:
+              type: boolean
+            quantity_in_client_cart:
+              type: integer
+      meta:
+        properties:
+          current_page:
+            description: Номер текущей страницы
+            type: integer
+            example: 1
+          from:
+            description: С какого номера элементы на выбранной странице
+            type: integer
+            example: 1
+          last_page:
+            description: Номер последней страницы с данными
+            type: integer
+            example: 3
+          per_page:
+            description: Количество элементов на странице
+            type: integer
+            example: 10
+          to:
+            description: До какого номера элементы на выбранной странице
+            type: integer
+            example: 10
+          total:
+            description: Суммарное количество элементов в выборке
+            type: integer
+            example: 27
+  AssortmentResponse:
+    description: Номенклатура
+    type: object
+    properties:
+      uuid:
+        description: Идентификатор
+        type: uuid
+        example: fc6ce5f1-b6db-4cf9-8318-bbb3efbb64b1
+      catalog_uuid:
+        description: Идентификатор каталога СМАРТ
+        type: uuid
+        example: b4c8e3ff-4797-4dbc-8c3e-a81ec192bb92
+      catalog_name:
+        description: Наименование каталога СМАРТ
+        type: string
+        example: Бутилированная вода
+      name:
+        description: Наименование товара
+        type: string
+        example: 1л. Пэт Минеральная вода
+      short_name:
+        description: Короткое наименование номенклатуры
+        type: string
+        example: Минеральная вода
+      assortment_unit_id:
+        description: Идентификатор единицы измерения
+        type: string
+        example: 'package(упак), piece (шт), roll (рул), set (набор), kilogram (кг)'
+      country_id:
+        description: Идентификатор страны производства
+        type: string
+        example: AU
+      weight:
+        description: Масса в граммах
+        type: number
+        example: 1203
+      volume:
+        description: Объем в мм кубических
+        type: number
+        example: 125
+      manufacturer:
+        description: Производитель
+        type: string
+        example: ООО Ромашка
+        x-nullable: true
+      ingredients:
+        description: Состав
+        type: string
+        example: 'Вода, Хлор(CI), Сульфат(SO),Натрий(Na), кальций(Ca)'
+      description:
+        description: Описание
+        type: string
+        example: Минеральная вода
+      temperature_min:
+        description: 'Темпер режим хранения от, °С'
+        type: integer
+        example: 10
+      temperature_max:
+        description: 'Темпер режим хранения до, °С'
+        type: integer
+        example: 45
+      production_standard_id:
+        description: "Стандарт продукта (ГОСТ\\ТУ)"
+        type: string
+        example: tu
+      production_standard_number:
+        description: Номер ГОСТ/ТУ
+        type: string
+        example: Р 51766-2001
+      shelf_life:
+        description: Срок годности в днях
+        type: integer
+        example: 180
+      rating:
+        description: Значение рейтинга
+        type: number
+        x-nullable: true
+        example: 2
+      bonus_percent:
+        description: Процент бонусов за покупку
+        type: number
+        x-nullable: true
+        example: 12.01
+      images:
+        description: Массив изображений
+        type: array
+        items:
+          type: object
+          properties:
+            uuid:
+              description: Идентификатор изображения
+              type: uuid
+              example: 8c217ba8-8410-4eb2-9d77-5b8cd85a7014
+            path:
+              description: Путь до файла
+              type: string
+              example: assortment-image/jrXQvlUIvHVYxqt7P1OEGCNqIzJIqjxyBwn5fE1x.png
+            thumbnails:
+              type: object
+              properties:
+                50x50:
+                  description: Путь до превью
+                  type: string
+                  example: thumbnails/assortment-image/50x50/jrXQvlUIvHVYxqt7P1OEGCNqIzJIqjxyBwn5fE1x.png
+      stores:
+        description: Массив магазинов
+        type: array
+        items:
+          type: object
+          properties:
+            uuid:
+              description: Идентификатор магазина
+              type: uuid
+              example: 8bdc223c-fae8-4503-b2fc-94084be26c82
+            brand_name:
+              description: Наименование магазина
+              type: string
+              example: Гослинг Веар
+            loyalty_card_types:
+              description: Массив типов карт
+              type: array
+              items:
+                type: object
+                properties:
+                  uuid:
+                    description: Идентификатор типа карт
+                    type: uuid
+                    example: 8bd639e6-17dc-4b53-aea8-39688d2b2304
+      is_favorite:
+        description: Любимый продукт?
+        type: boolean
+        example: true
+      is_promo_favorite:
+        description: 'Любимый продукт по акции "Любимый продукт"?'
+        type: boolean
+        example: true
+      current_price:
+        description: Текущая цена
+        type: number
+      quantity_in_client_cart:
+        description: Количество в корзине клиента
+        type: integer
+      price_with_discount:
+        type: number
+      discount_type:
+        type: string
+      discount_type_color:
+        type: string
+      discount_type_name:
+        type: string
+      discount_active_till:
+        type: dateTime
+        x-nullable: true
+        example: '2018-10-28 15:19:16-04'
+      user_shopping_lists:
+        type: array
+        items:
+          type: object
+          properties:
+            uuid:
+              type: string
+              format: uuid
+            name:
+              type: string
+      tags:
+        description: Массив тегов
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              description: Имя тега
+              type: string
+              example: ЗОЖ
+      properties:
+        description: Массив характеристик
+        type: array
+        items:
+          type: object
+          properties:
+            uuid:
+              description: Идентификатор характеристики
+              type: string
+              example: fc6ce5f1-b6db-4cf9-8318-bbb3efbb64b1
+            name:
+              description: Имя характеристики
+              type: string
+              example: Жирность
+            value:
+              description: Значение характеристики
+              type: string
+              example: '15%'
+      products_quantity:
+        type: number
+  LoyaltyCardResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            uuid:
+              description: Идентификатор
+              type: uuid
+              example: 8c217b9b-eb2d-4d14-ae5d-5bd79f899fb8
+            number:
+              description: Номер карты лояльности
+              type: integer
+              example: 123521
+            loyalty_card_type_uuid:
+              description: Идентификатор типа карты лояльности
+              type: uuid
+              example: 8c217a42-1a5b-4ee1-abc5-c21bccc70745
+            loyalty_card_type_name:
+              description: Имя типа карты лояльности
+              type: string
+              example: Пятерочка
+            client_uuid:
+              description: Идентификатор клиента
+              type: uuid
+              x-nullable: true
+              example: 8c217a42-1a5b-4ee1-abc5-c21bccc70745
+            client_phone:
+              description: Номер телефона клиента
+              type: string
+              x-nullable: true
+              example: '+79512341212'
+            created_at:
+              description: Дата создания
+              type: dateTime
+              example: '2018-10-28 15:19:16-04'
+      meta:
+        properties:
+          current_page:
+            description: Номер текущей страницы
+            type: integer
+            example: 1
+          from:
+            description: С какого номера элементы на выбранной странице
+            type: integer
+            example: 1
+          last_page:
+            description: Номер последней страницы с данными
+            type: integer
+            example: 3
+          per_page:
+            description: Количество элементов на странице
+            type: integer
+            example: 10
+          to:
+            description: До какого номера элементы на выбранной странице
+            type: integer
+            example: 10
+          total:
+            description: Суммарное количество элементов в выборке
+            type: integer
+            example: 27
+  ReceiptResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            uuid:
+              description: Идентификатор
+              type: uuid
+              example: 8c27117b-3719-40aa-a75c-751efb13d6e0
+            id:
+              description: Порядковый номер чека
+              type: integer
+              example: 123521
+            total:
+              description: Сумма чека
+              type: number
+              example: 400
+            created_at:
+              description: Дата создания
+              type: dateTime
+              example: '2018-10-28 15:19:16-04'
+      meta:
+        properties:
+          current_page:
+            description: Номер текущей страницы
+            type: integer
+            example: 1
+          from:
+            description: С какого номера элементы на выбранной странице
+            type: integer
+            example: 1
+          last_page:
+            description: Номер последней страницы с данными
+            type: integer
+            example: 3
+          per_page:
+            description: Количество элементов на странице
+            type: integer
+            example: 10
+          to:
+            description: До какого номера элементы на выбранной странице
+            type: integer
+            example: 10
+          total:
+            description: Суммарное количество элементов в выборке
+            type: integer
+            example: 27
+  ReceiptResponse:
+    description: Чек
+    type: object
+    properties:
+      data:
+        properties:
+          uuid:
+            description: Идентификатор
+            type: uuid
+            example: 8c27117b-3719-40aa-a75c-751efb13d6e0
+          id:
+            description: Порядковый номер чека
+            type: integer
+            example: 123521
+          total:
+            description: Сумма чека
+            type: number
+            example: 400
+          created_at:
+            description: Дата создания
+            type: dateTime
+            example: '2018-10-28 15:19:16-04'
+          store_brand_name:
+            description: Наименование магазина
+            type: string
+            x-nullable: true
+            example: Пятерочка
+          store_address:
+            description: Адрес магазина фактический
+            type: string
+            example: '392730, Орловская область, город Ногинск, пер. Косиора, 92'
+          receipt_lines_count:
+            description: Количество позиций в чеке
+            type: integer
+            example: 5
+          loyalty_card_types:
+            description: Массив типов карт
+            type: array
+            items:
+              properties:
+                uuid:
+                  description: Идентификатор типа карт
+                  type: uuid
+                  example: 8bd639e6-17dc-4b53-aea8-39688d2b2304
+  ReceiptLineResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            uuid:
+              description: Идентификатор
+              type: uuid
+              example: 8c27117b-3719-40aa-a75c-751efb13d6e0
+            assortment_uuid:
+              description: Идентификатор номенклатуры
+              type: uuid
+              example: b4c8e3ff-4797-4dbc-8c3e-a81ec192bb92
+            assortment_name:
+              description: Наименование номенклатуры
+              type: string
+              example: 1л. Пэт Минеральная вода
+            assortment_rating:
+              description: Общий рейтинг номенклатуры
+              type: number
+              x-nullable: true
+              example: 4
+            assortment_unit_id:
+              description: Еденица измерения
+              type: string
+              example: piece
+            quantity:
+              description: Количество товара в чеке
+              type: integer
+              example: 27
+            total:
+              description: Сумма чека
+              type: number
+              example: 400
+            rating:
+              description: Оценка товара клиентом
+              type: number
+              x-nullable: true
+              example: 4
+            rating_comment:
+              description: Комментарий к оценке
+              type: string
+              x-nullable: true
+              example: Очень понравилось
+            discountable_type:
+              type: string
+              x-nullable: true
+            discount_type_color:
+              type: string
+              x-nullable: true
+            discount_type_name:
+              type: string
+              x-nullable: true
+            assortment_images:
+              description: Массив изображений
+              type: array
+              items:
+                properties:
+                  uuid:
+                    description: Идентификатор изображения
+                    type: uuid
+                    example: fc6ce5f1-b6db-4cf9-8318-bbb3efbb64b1
+                  path:
+                    description: Путь до файла
+                    type: string
+                    example: assortment-image/jrXQvlUIvHVYxqt7P1OEGCNqIzJIqjxyBwn5fE1x.png
+                  thumbnails:
+                    properties:
+                      50x50:
+                        description: Путь до превью
+                        type: string
+                        example: thumbnails/assortment-image/50x50/jrXQvlUIvHVYxqt7P1OEGCNqIzJIqjxyBwn5fE1x.png
+  RatingScoreForAssortmentResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            created_at:
+              description: Дата создания
+              type: dateTime
+              example: '2018-09-18 00:29:11-04'
+            assortment_uuid:
+              description: Идентификатор номенклатуры
+              type: uuid
+              example: b4c8e3ff-4797-4dbc-8c3e-a81ec192bb92
+            assortment_name:
+              description: Наименование номенклатуры
+              type: string
+              example: 1л. Пэт Минеральная вода
+            value:
+              description: Оценка
+              type: integer
+              example: 5
+            comment:
+              description: Комментарий к оценке
+              type: string
+              x-nullable: true
+              example: Очень понравилось
+            client_uuid:
+              description: Идентификатор клиента
+              type: uuid
+              x-nullable: true
+              example: 8c217a42-1a5b-4ee1-abc5-c21bccc70745
+            client_name:
+              description: Имя клиента
+              type: string
+              x-nullable: true
+              example: Павел
+  AssortmentBrandResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            uuid:
+              description: Идентификатор
+              type: string
+              example: fc6ce5f1-b6db-4cf9-8318-bbb3efbb64b1
+            name:
+              description: Наименование бренда
+              type: string
+              example: Вкуснотеево
+            created_at:
+              description: Дата и время создания
+              type: string
+              example: '2018-09-18 00:29:11-04'
+      meta:
+        properties:
+          current_page:
+            description: Номер текущей страницы
+            type: integer
+            example: 1
+          from:
+            description: С какого номера элементы на выбранной странице
+            type: integer
+            example: 1
+          last_page:
+            description: Номер последней страницы с данными
+            type: integer
+            example: 3
+          per_page:
+            description: Количество элементов на странице
+            type: integer
+            example: 10
+          to:
+            description: До какого номера элементы на выбранной странице
+            type: integer
+            example: 10
+          total:
+            description: Суммарное количество элементов в выборке
+            type: integer
+            example: 27
+  ShoppingListResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            uuid:
+              description: Идентификатор
+              type: uuid
+              example: 8c27117b-3719-40aa-a75c-751efb13d6e0
+            name:
+              description: Имя списка покупок
+              type: string
+              example: На завтра
+            assortments:
+              description: Массив номенклатур
+              type: array
+              items:
+                properties:
+                  uuid:
+                    type: string
+                  rating:
+                    type: number
+                  current_price:
+                    type: number
+                  name:
+                    description: Наименование номенклатуры
+                    type: string
+                    example: 1л. Пэт Минеральная вода
+                  assortment_unit_id:
+                    description: Еденица измерения
+                    type: string
+                    example: piece
+                  weight:
+                    description: Вес
+                    type: string
+                    example: 100
+                  quantity:
+                    description: Количество номенклатуры
+                    type: integer
+                    example: 5
+                  price_with_discount:
+                    type: number
+                  discount_type:
+                    type: string
+                  discount_type_color:
+                    type: string
+                  discount_type_name:
+                    type: string
+                  images:
+                    description: Массив изображений
+                    type: array
+                    items:
+                      properties:
+                        uuid:
+                          description: Идентификатор изображения
+                          type: uuid
+                          example: fc6ce5f1-b6db-4cf9-8318-bbb3efbb64b1
+                        path:
+                          description: Путь до файла
+                          type: string
+                          example: assortment-image/jrXQvlUIvHVYxqt7P1OEGCNqIzJIqjxyBwn5fE1x.png
+                        thumbnails:
+                          properties:
+                            50x50:
+                              description: Путь до превью
+                              type: string
+                              example: thumbnails/assortment-image/50x50/jrXQvlUIvHVYxqt7P1OEGCNqIzJIqjxyBwn5fE1x.png
+      meta:
+        properties:
+          current_page:
+            description: Номер текущей страницы
+            type: integer
+            example: 1
+          from:
+            description: С какого номера элементы на выбранной странице
+            type: integer
+            example: 1
+          last_page:
+            description: Номер последней страницы с данными
+            type: integer
+            example: 3
+          per_page:
+            description: Количество элементов на странице
+            type: integer
+            example: 10
+          to:
+            description: До какого номера элементы на выбранной странице
+            type: integer
+            example: 10
+          total:
+            description: Суммарное количество элементов в выборке
+            type: integer
+            example: 27
+  ShoppingList:
+    description: Чек
+    type: object
+    properties:
+      data:
+        properties:
+          uuid:
+            description: Идентификатор
+            type: uuid
+            example: 8c27117b-3719-40aa-a75c-751efb13d6e0
+          name:
+            description: Имя списка покупок
+            type: string
+            example: На завтра
+          assortments:
+            description: Массив номенклатур
+            type: array
+            items:
+              properties:
+                uuid:
+                  type: string
+                rating:
+                  type: number
+                current_price:
+                  type: number
+                name:
+                  description: Наименование номенклатуры
+                  type: string
+                  example: 1л. Пэт Минеральная вода
+                quantity:
+                  description: Количество номенклатуры
+                  type: integer
+                  example: 5
+                products_quantity:
+                  description: Остаток товара в выбранном магазине
+                  type: integer
+                  example: 5
+                images:
+                  description: Массив изображений
+                  type: array
+                  items:
+                    properties:
+                      uuid:
+                        description: Идентификатор изображения
+                        type: uuid
+                        example: fc6ce5f1-b6db-4cf9-8318-bbb3efbb64b1
+                      path:
+                        description: Путь до файла
+                        type: string
+                        example: assortment-image/jrXQvlUIvHVYxqt7P1OEGCNqIzJIqjxyBwn5fE1x.png
+                      thumbnails:
+                        properties:
+                          50x50:
+                            description: Путь до превью
+                            type: string
+                            example: thumbnails/assortment-image/50x50/jrXQvlUIvHVYxqt7P1OEGCNqIzJIqjxyBwn5fE1x.png
+  TagResponse:
+    description: Тег
+    type: object
+    properties:
+      data:
+        properties:
+          uuid:
+            description: Идентификатор
+            type: uuid
+            example: fc6ce5f1-b6db-4cf9-8318-bbb3efbb64b1
+          name:
+            description: Наименование тега
+            type: string
+            example: ЗОЖ
+          fixed_in_filters:
+            description: Зафиксирована в фильтрах?
+            type: boolean
+            example: true
+          created_at:
+            description: Дата создания
+            type: dateTime
+            example: '2018-09-18 00:29:11-04'
+  TagResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            uuid:
+              description: Идентификатор
+              type: uuid
+              example: fc6ce5f1-b6db-4cf9-8318-bbb3efbb64b1
+            name:
+              description: Наименование тега
+              type: string
+              example: ЗОЖ
+            fixed_in_filters:
+              description: Зафиксирована в фильтрах?
+              type: boolean
+              example: true
+            created_at:
+              description: Дата создания
+              type: dateTime
+              example: '2018-09-18 00:29:11-04'
+      meta:
+        properties:
+          current_page:
+            description: Номер текущей страницы
+            type: integer
+            example: 1
+          from:
+            description: С какого номера элементы на выбранной странице
+            type: integer
+            example: 1
+          last_page:
+            description: Номер последней страницы с данными
+            type: integer
+            example: 3
+          per_page:
+            description: Количество элементов на странице
+            type: integer
+            example: 10
+          to:
+            description: До какого номера элементы на выбранной странице
+            type: integer
+            example: 10
+          total:
+            description: Суммарное количество элементов в выборке
+            type: integer
+            example: 27
+  TagNameResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              description: Наименование тега
+              type: string
+              example: ЗОЖ
+      meta:
+        properties:
+          current_page:
+            description: Номер текущей страницы
+            type: integer
+            example: 1
+          from:
+            description: С какого номера элементы на выбранной странице
+            type: integer
+            example: 1
+          last_page:
+            description: Номер последней страницы с данными
+            type: integer
+            example: 3
+          per_page:
+            description: Количество элементов на странице
+            type: integer
+            example: 10
+          to:
+            description: До какого номера элементы на выбранной странице
+            type: integer
+            example: 10
+          total:
+            description: Суммарное количество элементов в выборке
+            type: integer
+            example: 27
+  CartAssortmentResource:
+    title: CartAssortmentResource
+    type: object
+    description: ''
+    properties:
+      assortment:
+        $ref: '#/definitions/AssortmentResponse'
+      quantity:
+        type: number
+    required:
+      - assortment
+      - quantity
+  StoreCartAssortmentRequest:
+    title: StoreCartAssortmentRequest
+    type: object
+    properties:
+      uuid:
+        type: string
+        description: Идетнификатор ассортимента
+      quantity:
+        type: number
+        description: Количество
+        minimum: 0.01
+    required:
+      - uuid
+      - quantity
+  OrderCollectionResource:
+    title: OrderCollectionResource
+    type: object
+    properties:
+      uuid:
+        type: string
+        format: uuid
+      number:
+        type: integer
+      store_user_uuid:
+        type: string
+        format: uuid
+      store_user_full_name:
+        type: string
+      store_user_address:
+        type: string
+      client_uuid:
+        type: string
+        format: uuid
+      order_status_id:
+        type: string
+      order_delivery_type_id:
+        type: string
+      order_payment_type_id:
+        type: string
+      client_comment:
+        type: string
+      client_email:
+        type: string
+        format: email
+      client_address_data:
+        type: object
+        required:
+          - address
+        properties:
+          address:
+            type: string
+          floor:
+            type: integer
+          entrance:
+            type: integer
+          apartment_number:
+            type: integer
+          intercom_code:
+            type: string
+      is_paid:
+        type: boolean
+      delivery_price:
+        type: number
+      total_discount_for_products:
+        type: number
+      total_price_for_products_with_discount:
+        type: number
+      total_price:
+        type: number
+      total_weight:
+        type: number
+      total_quantity:
+        type: number
+      paid_bonus:
+        type: number
+      bonus_to_charge:
+        type: number
+      planned_delivery_datetime_from:
+        type: string
+        format: date-time
+      planned_delivery_datetime_to:
+        type: string
+        format: date-time
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+    required:
+      - uuid
+      - store_user_uuid
+      - store_user_full_name
+      - store_user_address
+      - client_uuid
+      - order_status_id
+      - order_delivery_type_id
+      - order_payment_type_id
+      - client_comment
+      - client_email
+      - client_address_data
+      - is_paid
+      - delivery_price
+      - total_discount_for_products
+      - total_price_for_products_with_discount
+      - total_price
+      - paid_bonus
+      - bonus_to_charge
+      - total_weight
+      - total_quantity
+      - planned_delivery_datetime_from
+      - planned_delivery_datetime_to
+      - created_at
+      - updated_at
+  OrderResource:
+    title: OrderResource
+    type: object
+    properties:
+      uuid:
+        type: string
+        format: uuid
+      number:
+        type: integer
+      store_user_uuid:
+        type: string
+        format: uuid
+      store_user_full_name:
+        type: string
+      store_user_address:
+        type: string
+      client_uuid:
+        type: string
+        format: uuid
+      order_status_id:
+        type: string
+      order_delivery_type_id:
+        type: string
+      order_payment_type_id:
+        type: string
+      client_comment:
+        type: string
+      client_email:
+        type: string
+        format: email
+      client_address_data:
+        type: object
+        required:
+          - address
+        properties:
+          address:
+            type: string
+          floor:
+            type: integer
+          entrance:
+            type: integer
+          apartment_number:
+            type: integer
+          intercom_code:
+            type: string
+      is_paid:
+        type: boolean
+      delivery_price:
+        type: number
+      to_free_delivery:
+        type: number
+      to_min_price:
+        type: number
+        x-nullable: true
+      total_discount_for_products:
+        type: number
+      total_price_for_products_with_discount:
+        type: number
+      total_price:
+        type: number
+      total_weight:
+        type: number
+      total_quantity:
+        type: number
+      paid_bonus:
+        type: number
+      bonus_to_charge:
+        type: number
+      max_bonus_to_paid:
+        type: number
+      planned_delivery_datetime_from:
+        type: string
+        format: date-time
+      planned_delivery_datetime_to:
+        type: string
+        format: date-time
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      promocode:
+        type: string
+        x-nullable: true
+      products:
+        type: array
+        items:
+          $ref: '#/definitions/OrderProductResource'
+    required:
+      - uuid
+      - store_user_uuid
+      - store_user_full_name
+      - store_user_address
+      - client_uuid
+      - order_status_id
+      - order_delivery_type_id
+      - order_payment_type_id
+      - client_comment
+      - client_email
+      - client_address_data
+      - is_paid
+      - delivery_price
+      - total_discount_for_products
+      - total_price_for_products_with_discount
+      - total_price
+      - paid_bonus
+      - bonus_to_charge
+      - max_bonus_to_paid
+      - total_weight
+      - total_quantity
+      - planned_delivery_datetime_from
+      - planned_delivery_datetime_to
+      - created_at
+      - updated_at
+      - products
+  OrderProductResource:
+    title: OrderProductResource
+    type: object
+    properties:
+      uuid:
+        type: string
+        format: uuid
+      order_uuid:
+        type: string
+        format: uuid
+      product_uuid:
+        type: string
+        format: uuid
+      quantity:
+        type: number
+      total_weight:
+        type: number
+      price_with_discount:
+        type: number
+      discount:
+        type: number
+      total_discount:
+        type: number
+      total_amount_with_discount:
+        type: number
+      discountable_type:
+        type: string
+      discount_type_color:
+        type: string
+      discount_type_name:
+        type: string
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      assortment:
+        $ref: '#/definitions/AssortmentSimpleResource'
+    required:
+      - uuid
+      - order_uuid
+      - product_uuid
+      - quantity
+      - total_weight
+      - price_with_discount
+      - discount
+      - total_discount
+      - total_amount_with_discount
+      - discountable_type
+      - discount_type_color
+      - discount_type_name
+      - created_at
+      - updated_at
+      - assortment
+  PaginationMeta:
+    title: PaginationMeta
+    type: object
+    properties:
+      current_page:
+        description: Номер текущей страницы
+        type: integer
+        example: 1
+      from:
+        description: С какого номера элементы на выбранной странице
+        type: integer
+        example: 1
+      last_page:
+        description: Номер последней страницы с данными
+        type: integer
+        example: 3
+      per_page:
+        description: Количество элементов на странице
+        type: integer
+        example: 10
+      to:
+        description: До какого номера элементы на выбранной странице
+        type: integer
+        example: 10
+      total:
+        description: Суммарное количество элементов в выборке
+        type: integer
+        example: 27
+  OrderCalculateRequest:
+    title: OrderCalculateRequest
+    type: object
+    properties:
+      order:
+        type: object
+        required:
+          - store_user_uuid
+        properties:
+          store_user_uuid:
+            type: string
+          order_delivery_type_id:
+            type: string
+            x-nullable: true
+          order_payment_type_id:
+            type: string
+            x-nullable: true
+          promocode:
+            type: string
+            x-nullable: true
+      products:
+        type: array
+        minItems: 1
+        uniqueItems: true
+        items:
+          type: object
+          properties:
+            quantity:
+              type: integer
+              minimum: 1
+              maximum: 100
+            assortment_uuid:
+              type: string
+              format: uuid
+          required:
+            - quantity
+            - assortment_uuid
+    required:
+      - order
+      - products
+  OrderStoreRequest:
+    title: OrderStoreRequest
+    allOf:
+      - $ref: '#/definitions/OrderCalculateRequest'
+      - type: object
+        properties:
+          order:
+            type: object
+            properties:
+              client_comment:
+                type: string
+              client_email:
+                type: string
+                format: email
+              client_address_data:
+                type: object
+                required:
+                  - address
+                properties:
+                  address:
+                    type: string
+                    minLength: 10
+                    maxLength: 512
+                  floor:
+                    type: integer
+                  entrance:
+                    type: integer
+                  apartment_number:
+                    type: integer
+                  intercom_code:
+                    type: integer
+              client_credit_card_uuid:
+                type: string
+                format: uuid
+                description: Карта клиента. По умолчанию берется первая найденная
+              planned_delivery_datetime_from:
+                type: string
+                format: date-time
+                description: Дата должна быть в будущем
+              planned_delivery_datetime_to:
+                type: string
+                format: date-time
+                description: 'Дата должна быть после `order.planned_delivery_datetime_from`, а так же в том же дне что и `order.planned_delivery_datetime_from`'
+              promocode:
+                type: string
+                x-nullable: true
+            required:
+              - client_email
+              - client_address_data
+              - planned_delivery_datetime_from
+              - planned_delivery_datetime_to
+  NotificationResource:
+    title: NotificationResource
+    type: object
+    properties:
+      id:
+        type: string
+      type:
+        type: string
+      data:
+        type: object
+        required:
+          - title
+          - body
+          - meta
+        properties:
+          title:
+            type: string
+          body:
+            type: string
+          meta:
+            type: object
+      created_at:
+        type: string
+        format: date-time
+    required:
+      - id
+      - type
+      - data
+      - created_at
+  DeliveryAddressResource:
+    title: DeliveryAddressResource
+    type: object
+    properties:
+      id:
+        type: string
+      title:
+        type: string
+      city:
+        type: string
+      street:
+        type: string
+      house:
+        type: string
+      floor:
+        type: integer
+      entrance:
+        type: integer
+      apartment_number:
+        type: integer
+      intercom_code:
+        type: string
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+    required:
+      - id
+      - title
+      - city
+      - street
+      - house
+      - floor
+      - entrance
+      - apartment_number
+      - intercom_code
+      - created_at
+      - updated_at
+  DeliveryAddressStoreRequest:
+    title: DeliveryAddressStoreRequest
+    type: object
+    properties:
+      title:
+        type: string
+        minLength: 3
+        maxLength: 256
+      city:
+        type: string
+        minLength: 2
+        maxLength: 256
+      street:
+        type: string
+        minLength: 3
+        maxLength: 256
+      house:
+        type: string
+        minLength: 1
+        maxLength: 256
+      floor:
+        type: integer
+      entrance:
+        type: integer
+      apartment_number:
+        type: integer
+      intercom_code:
+        type: string
+        minLength: 4
+        maxLength: 16
+    required:
+      - title
+      - city
+      - street
+  AssortmentSimpleResource:
+    title: AssortmentSimpleResource
+    type: object
+    properties:
+      uuid:
+        type: string
+      name:
+        type: string
+      catalog_uuid:
+        type: string
+      catalog_name:
+        type: string
+      rating:
+        type: string
+      images:
+        type: array
+        items:
+          $ref: '#/definitions/FileShortInfoResource'
+    required:
+      - uuid
+      - name
+      - catalog_uuid
+      - catalog_name
+      - rating
+      - images
+  FileShortInfoResource:
+    title: FileShortInfoResource
+    type: object
+    properties:
+      uuid:
+        type: string
+      path:
+        type: string
+      public_name:
+        type: string
+      thumbnails:
+        type: array
+        items:
+          type: string
+    required:
+      - uuid
+      - path
+      - public_name
+      - thumbnails
+  ClientActivePromoFavoriteAssortmentResource:
+    title: ClientActivePromoFavoriteAssortmentResource
+    type: object
+    properties:
+      uuid:
+        type: string
+        format: uuid
+      client_uuid:
+        type: string
+        format: uuid
+      assortment_uuid:
+        type: string
+        format: uuid
+      assortment_name:
+        type: string
+      active_from:
+        type: string
+      active_to:
+        type: string
+        format: date-time
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      discount_percent:
+        type: number
+    required:
+      - uuid
+      - client_uuid
+      - assortment_uuid
+      - active_from
+      - active_to
+      - created_at
+      - updated_at
+      - discount_percent
+  ClientPromoFavoriteAssortmentVariantResource:
+    title: ClientPromoFavoriteAssortmentVariantResource
+    type: object
+    properties:
+      uuid:
+        type: string
+        format: uuid
+      client_uuid:
+        type: string
+        format: uuid
+      can_be_activated_till:
+        type: string
+        format: date-time
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+    required:
+      - uuid
+      - client_uuid
+      - can_be_activated_till
+      - created_at
+      - updated_at
+  PromoDiverseFoodClientStatResource:
+    title: PromoDiverseFoodClientStatResource
+    type: object
+    properties:
+      uuid:
+        type: string
+        format: uuid
+      client_uuid:
+        type: string
+        format: uuid
+      purchased_count:
+        type: integer
+      rated_count:
+        type: integer
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      month:
+        type: string
+        example: 2020-10
+        pattern: YYYY-MM
+    required:
+      - uuid
+      - client_uuid
+      - purchased_count
+      - rated_count
+      - created_at
+      - updated_at
+      - month
+  PromoDiverseFoodSettingsResource:
+    title: PromoDiverseFoodSettingsResource
+    type: object
+    properties:
+      uuid:
+        type: string
+      count_purchases:
+        type: integer
+      count_rating_scores:
+        type: integer
+      discount_percent:
+        type: number
+      is_enabled:
+        type: boolean
+    required:
+      - uuid
+      - count_purchases
+      - count_rating_scores
+      - discount_percent
+      - is_enabled
+  PromoDiverseFoodClientDiscountResource:
+    title: PromoDiverseFoodClientDiscountResource
+    type: object
+    properties:
+      uuid:
+        type: string
+        format: uuid
+      client_uuid:
+        type: string
+        format: uuid
+      discount_percent:
+        type: number
+      start_at:
+        type: string
+        format: date-time
+      end_at:
+        type: string
+        format: date-time
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+    required:
+      - uuid
+      - client_uuid
+      - discount_percent
+      - start_at
+      - end_at
+      - created_at
+      - updated_at
+  ClientBonusTransactionResource:
+    title: ClientBonusTransactionResource
+    type: object
+    properties:
+      uuid:
+        type: string
+        format: uuid
+      client_uuid:
+        type: string
+        format: uuid
+      related_reference_id:
+        type: string
+      related_reference_type:
+        type: string
+      reason:
+        type: string
+      quantity_old:
+        type: integer
+      quantity_new:
+        type: integer
+      quantity_delta:
+        type: integer
+      created_at:
+        type: string
+        format: date-time
+    required:
+      - uuid
+      - client_uuid
+      - related_reference_id
+      - related_reference_type
+      - reason
+      - quantity_old
+      - quantity_new
+      - quantity_delta
+      - created_at
+  ClientBonusTransactionCollectionResponse:
+    title: ClientBonusTransactionCollectionResponse
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/ClientBonusTransactionResource'
+      meta:
+        $ref: '#/definitions/PaginationMeta'
+  PromoDescriptionResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        $ref: '#/definitions/PromoDescriptionResource'
+      meta:
+        properties:
+          current_page:
+            description: Номер текущей страницы
+            type: integer
+            example: 1
+          from:
+            description: С какого номера элементы на выбранной странице
+            type: integer
+            example: 1
+          last_page:
+            description: Номер последней страницы с данными
+            type: integer
+            example: 3
+          per_page:
+            description: Количество элементов на странице
+            type: integer
+            example: 10
+          to:
+            description: До какого номера элементы на выбранной странице
+            type: integer
+            example: 10
+          total:
+            description: Суммарное количество элементов в выборке
+            type: integer
+            example: 27
+  CreditCardResource:
+    title: CreditCardResource
+    type: object
+    properties:
+      uuid:
+        type: string
+      card_mask:
+        type: string
+    required:
+      - uuid
+      - card_mask
+  PromotionInTheShopResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        type: object
+        properties:
+          store_uuid:
+            description: 'Идентификатор магазина, в котором активирована акция'
+            type: string
+            format: uuid
+            example: 8c217a42-1a5b-4ee1-abc5-c21bccc70745
+          store_name:
+            description: 'Наименование магазина, в котором активирована акция'
+            type: string
+            example: В десяточку
+          discount_percent:
+            description: Процент скидки
+            type: number
+            example: 5.5
+          products:
+            type: array
+            items:
+              type: object
+              properties:
+                uuid:
+                  type: string
+                  format: uuid
+                  description: Идентификатор продукта на который распространяется текущая акции
+                  example: 8c217b9b-eb2d-4d14-ae5d-5bd79f899fb8
+                name:
+                  type: string
+                  description: Наименование продукта на который распространяется текущая акции
+                  example: Паста шоколадная
+                rating:
+                  type: number
+                assortment_unit_id:
+                  type: string
+                quantity_in_client_cart:
+                  type: number
+                total_bonus:
+                  type: number
+                images:
+                  description: Массив изображений
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      uuid:
+                        description: Идентификатор изображения
+                        type: string
+                        format: uuid
+                        example: fc6ce5f1-b6db-4cf9-8318-bbb3efbb64b1
+                      path:
+                        description: Путь до файла
+                        type: string
+                        example: assortment-image/jrXQvlUIvHVYxqt7P1OEGCNqIzJIqjxyBwn5fE1x.png
+                      thumbnails:
+                        type: object
+                        required:
+                          - 50x50
+                        properties:
+                          50x50:
+                            description: Путь до превью
+                            type: string
+                            example: thumbnails/assortment-image/50x50/jrXQvlUIvHVYxqt7P1OEGCNqIzJIqjxyBwn5fE1x.png
+                    required:
+                      - path
+                      - thumbnails
+                price:
+                  type: number
+                price_with_discount:
+                  type: number
+                  x-nullable: true
+                discount_type:
+                  type: string
+                discount_type_color:
+                  type: string
+                discount_type_name:
+                  type: string
+                quantity:
+                  type: number
+              required:
+                - uuid
+                - name
+                - rating
+                - assortment_unit_id
+                - quantity_in_client_cart
+                - total_bonus
+                - images
+                - price
+                - price_with_discount
+                - quantity
+                - discount_type
+                - discount_type_color
+                - discount_type_name
+        required:
+          - store_uuid
+          - store_name
+          - discount_percent
+          - products
+  PromoDescriptionResource:
+    description: Акции - описание акций
+    type: object
+    properties:
+      uuid:
+        description: Идентификатор описания акции
+        type: string
+        example: 8c217b9b-eb2d-4d14-ae5d-5bd79f899fb8
+      name:
+        description: Название акции
+        type: string
+        example: Любимы продукт
+      title:
+        description: Заголовок акции
+        type: string
+        example: Заголовок акции
+      description:
+        description: Описание акции
+        type: string
+        example: Описание условий акции
+      logo_file_uuid:
+        description: Идентификатор файла логотипа акции
+        type: string
+        example: 8c217a42-1a5b-4ee1-abc5-c21bccc70745
+      logo_file_path:
+        description: Путь до файла логотипа акции
+        type: string
+        example: promo-logo/Qjaen29fO3CLjaMVvtRcrcobCHWn5oZ0kKA6ivyW.png
+      color:
+        x-nullable: true
+        description: Цвет акции
+        type: string
+      is_hidden:
+        x-nullable: true
+        description: Скрыта ли акция
+        type: boolean
+      discount_type:
+        x-nullable: true
+        description: Модель акции
+        type: string
+        example: "App\\Models\\PromoYellowPrice"
+      created_at:
+        description: Дата и время создания
+        type: string
+        example: '2018-10-28 15:19:16-04'
+      updated_at:
+        description: Дата и время обновления
+        type: string
+        example: '2018-10-28 15:19:16-04'
+  VacancyResponseCollection:
+    description: Массив объектов
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            uuid:
+              description: Идентификатор
+              type: string
+              example: 8c217b9b-eb2d-4d14-ae5d-5bd79f899fb8
+            title:
+              description: Заголовок
+              type: string
+              example: Грузчик
+            sort_number:
+              description: Пользовательская сортировка
+              type: string
+              example: 100
+            url:
+              description: Внешний url
+              type: string
+              example: 'https://google.com'
+            logo_file_uuid:
+              description: Идентификатор файла логотипа вакансии
+              type: string
+              example: 8c217a42-1a5b-4ee1-abc5-c21bccc70745
+            logo_file_path:
+              description: Путь до файла логотипа вакансии
+              type: string
+              example: loyalty-card-type-logo/Qjaen29fO3CLjaMVvtRcrcobCHWn5oZ0kKA6ivyW.png
+            created_at:
+              description: Дата и время создания
+              type: string
+              example: '2018-10-28 15:19:16-04'
+  OnboardingResponseCollection:
+    description: Онбординг
+    type: object
+    properties:
+      data:
+        properties:
+          uuid:
+            description: Идентификатор
+            type: string
+            example: 8c217b9b-eb2d-4d14-ae5d-5bd79f899fb8
+          title:
+            description: Заголовок
+            type: string
+            example: Грузчик
+          sort_number:
+            description: Пользовательская сортировка
+            type: string
+            example: 100
+          logo_file_uuid:
+            description: Идентификатор файла логотипа онбординга
+            type: string
+            example: 8c217a42-1a5b-4ee1-abc5-c21bccc70745
+          logo_file_path:
+            description: Путь до файла логотипа онбординга
+            type: string
+            example: loyalty-card-type-logo/Qjaen29fO3CLjaMVvtRcrcobCHWn5oZ0kKA6ivyW.png
+          created_at:
+            description: Дата и время создания
+            type: string
+            example: '2018-10-28 15:19:16-04'
+  SocialResponseCollection:
+    description: Соц.сети
+    type: object
+    properties:
+      data:
+        properties:
+          uuid:
+            description: Идентификатор
+            type: string
+            example: 8c217b9b-eb2d-4d14-ae5d-5bd79f899fb8
+          title:
+            description: Заголовок
+            type: string
+            example: Телеграм
+          sort_number:
+            description: Пользовательская сортировка
+            type: string
+            example: 100
+          url:
+            description: url
+            type: string
+            example: 'http://abc.abc'
+          logo_file_uuid:
+            description: Идентификатор файла логотипа соц.сети
+            type: string
+            example: 8c217a42-1a5b-4ee1-abc5-c21bccc70745
+          logo_file_path:
+            description: Путь до файла логотипа соц.сети
+            type: string
+            example: loyalty-card-type-logo/Qjaen29fO3CLjaMVvtRcrcobCHWn5oZ0kKA6ivyW.png
+          created_at:
+            description: Дата и время создания
+            type: string
+            example: '2018-10-28 15:19:16-04'
+      meta:
+        properties:
+          current_page:
+            description: Номер текущей страницы
+            type: integer
+            example: 1
+          from:
+            description: С какого номера элементы на выбранной странице
+            type: integer
+            example: 1
+          last_page:
+            description: Номер последней страницы с данными
+            type: integer
+            example: 3
+          per_page:
+            description: Количество элементов на странице
+            type: integer
+            example: 10
+          to:
+            description: До какого номера элементы на выбранной странице
+            type: integer
+            example: 10
+          total:
+            description: Суммарное количество элементов в выборке
+            type: integer
+            example: 27
+  OrderProductResourceWithRating:
+    title: OrderProductResourceWithRating
+    allOf:
+      - $ref: '#/definitions/OrderProductResource'
+      - type: object
+        properties:
+          rating:
+            type: integer
+          rating_comment:
+            type: string
+        required:
+          - rating
+          - rating_comment
+  OrderResourceWithRating:
+    title: OrderResourceWithRating
+    allOf:
+      - $ref: '#/definitions/OrderResource'
+      - type: object
+        properties:
+          products:
+            type: array
+            items:
+              $ref: '#/definitions/OrderProductResourceWithRating'
+        required:
+          - products
+  PurchaseLineResource:
+    title: PurchaseLineResource
+    type: object
+    properties:
+      source:
+        type: string
+        description: Источник данных (Заказ или Чек)
+      source_id:
+        type: string
+        format: uuid
+      source_line:
+        type: string
+        description: Источник данных позиции (Заказа или Чека)
+      source_line_id:
+        type: string
+        format: uuid
+      product_uuid:
+        type: string
+        format: uuid
+      assortment:
+        $ref: '#/definitions/AssortmentSimpleResource'
+      quantity:
+        type: number
+      total_weight:
+        type: number
+      price_with_discount:
+        type: number
+      discount:
+        type: number
+      original_price:
+        type: number
+      total_discount:
+        type: number
+      total_bonus:
+        type: integer
+      paid_bonus:
+        type: integer
+      discountable_type:
+        type: string
+      discount_type_color:
+        type: string
+      discount_type_name:
+        type: string
+      rating:
+        type: integer
+      rating_comment:
+        type: string
+      created_at:
+        type: string
+        format: date-time
+    required:
+      - source
+      - source_id
+      - source_line
+      - source_line_id
+      - product_uuid
+      - assortment
+      - quantity
+      - total_weight
+      - price_with_discount
+      - discount
+      - original_price
+      - total_discount
+      - total_bonus
+      - paid_bonus
+      - discountable_type
+      - discount_type_color
+      - discount_type_name
+      - rating
+      - rating_comment
+      - created_at
+  MealReceiptResource:
+    title: MealReceiptResource
+    type: object
+    properties:
+      uuid:
+        type: string
+        format: uuid
+      name:
+        type: string
+      section:
+        type: string
+      title:
+        type: string
+      description:
+        type: string
+      ingredients:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            quantity:
+              type: string
+      client_like_value:
+        type: boolean
+      file_path:
+        type: string
+      tabs:
+        type: array
+        items:
+          $ref: '#/definitions/MealReceiptTabResource'
+      assortment_uuids:
+        type: array
+        items:
+          type: string
+          format: uuid
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+    required:
+      - uuid
+      - name
+      - section
+      - title
+      - description
+      - ingredients
+      - client_like_value
+      - file
+      - tabs
+      - assortment_uuids
+      - created_at
+      - updated_at
+  MealReceiptTabResource:
+    title: MealReceiptTabResource
+    type: object
+    properties:
+      uuid:
+        type: string
+        format: uuid
+      meal_receipt_uuid:
+        type: integer
+      title:
+        type: string
+      text:
+        type: string
+      text_color:
+        type: string
+      duration:
+        type: integer
+      sequence:
+        type: integer
+      button_title:
+        type: string
+      url:
+        type: string
+      file_path:
+        type: string
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+    required:
+      - uuid
+      - story_id
+      - title
+      - text
+      - text_color
+      - duration
+      - sequence
+      - button_title
+      - url
+      - file
+      - created_at
+      - updated_at
+components:
+  parameters:
+    collectionsWhere:
+      name: where
+      in: query
+      description: Where clauses
+      required: false
+      schema:
+        type: array
+        description: Each key is filterable attribute
+        items:
+          type: object
+          description: It is array with 2 or 3 elemets
+          required:
+            - '0'
+            - '1'
+          properties:
+            '0':
+              type: string
+              description: 'Element 0: attribute name'
+              example: full_name
+            '1':
+              type: string
+              description: 'Element 1: filter-type or filter-value (if element 2 not exist it will be filter-value)'
+              example:
+                filter-type-one:
+                  value: LIKE
+                  summary: Filter type
+                filter-type-two:
+                  value: in
+                  summary: Filter type
+                filter-value:
+                  value: Alex Mercer
+                  summary: Filter value
+            '2':
+              type: string
+              description: 'Element 2: filter-value'
+              example: Alex Mercer
+    collectionsOrderBy:
+      name: order_by
+      in: query
+      description: Order by attributes
+      required: false
+      schema:
+        type: object
+        description: 'Each key is sortable attribute, and his value is sort-way'
+        minProperties: 1
+        additionalProperties:
+          type: string
+          enum:
+            - asc
+            - desc
+            - ASC
+            - DESC
+          description: 'Sorting by `property name*`'
+          example: DESC
+    collectionsPage:
+      name: page
+      in: query
+      description: Page number
+      required: false
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        default: 1
+    collectionsPerPage:
+      name: per_page
+      in: query
+      description: Number of objects in page
+      required: false
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 1000
+        default: 100

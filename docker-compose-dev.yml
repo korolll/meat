@@ -1,0 +1,14 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:10
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: tealsy
+      POSTGRES_USER: development
+      POSTGRES_PASSWORD: development
+volumes:
+  postgres:

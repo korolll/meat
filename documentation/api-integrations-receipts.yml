@@ -1,0 +1,136 @@
+swagger: "2.0"
+
+#
+# @see https://plugins.jetbrains.com/plugin/8347-swagger-plugin
+# @see https://github.com/sourcey/spectacle
+#
+
+schemes:
+  - https
+
+host: $DOCS_URL
+
+info:
+  title: SMART Public API for Receipts
+  version: v1
+  description: Тестовое окружение. Обязательный заголовок для запроса Accept:application/json
+
+paths:
+  /receipt-packages:
+    post:
+      summary: Загрузка чеков
+      tags:
+      - Загрузка чеков
+      parameters:
+        - $ref: "#/parameters/Receipt/@type"
+        - $ref: "#/parameters/Receipt/createDate"
+        - $ref: "#/parameters/Receipt/packageId"
+        - $ref: "#/parameters/Receipt/userUuid"
+        - $ref: "#/parameters/Receipt/data.[].date"
+        - $ref: "#/parameters/Receipt/data.[].num"
+        - $ref: "#/parameters/Receipt/data.[].loyaltyCardNumber"
+        - $ref: "#/parameters/Receipt/data.[].loyaltyCardTypeUuid"
+        - $ref: "#/parameters/Receipt/data.[].sum"
+        - $ref: "#/parameters/Receipt/data.[].productList.[].barcode"
+        - $ref: "#/parameters/Receipt/data.[].productList.[].sum"
+        - $ref: "#/parameters/Receipt/data.[].productList.[].quantity"
+      responses:
+        200:
+          description: Объект
+          schema:
+            $ref: "#/definitions/ReceiptPackageResponse"
+
+parameters:
+  Receipt:
+    '@type':
+      name: '@type'
+      type: string
+      in: body
+      description: Тип загружаемого пакета на данный момент 1 значение "ReceiptPackage"
+      required: true
+
+    createDate:
+      name: createDate
+      type: dateTime
+      in: body
+      description: Дата и время создания пакета чеков
+      required: true
+
+    packageId:
+      name: packageId
+      type: integer
+      in: body
+      description: Номер пакета чеков
+      required: true
+
+    userUuid:
+      name: userUuid
+      type: uuid
+      in: body
+      description: Идентификатор магазина в системе Тилси
+      required: true
+
+    data.[].date:
+      name: data[].date
+      type: dateTime
+      in: body
+      description: Дата и время чека
+      required: true
+
+    data.[].num:
+      name: data[].num
+      type: integer
+      in: body
+      description: Номер чека
+      required: true
+
+    data.[].loyaltyCardNumber:
+      name: data[].loyaltyCardNumber
+      type: integer
+      in: body
+      description: Номер карты лояльности
+      x-nullable: true
+
+    data.[].loyaltyCardTypeUuid:
+      name: data[].loyaltyCardTypeUuid
+      type: uuid
+      in: body
+      description: Идентификатор типа карты лояльности
+      x-nullable: true
+
+    data.[].sum:
+      name: data[].sum
+      type: number
+      in: body
+      description: Общая сумма чека
+      required: true
+
+    data.[].productList.[].barcode:
+      name:  data[].productList[].barcode
+      type: integer
+      in: body
+      description: Штрих код
+      required: true
+
+    data.[].productList.[].sum:
+      name:  data[].productList[].sum
+      type: number
+      in: body
+      description: Cумма за товар
+      required: true
+
+    data.[].productList.[].quantity:
+      name:  data[].productList[].quantity
+      type: integer
+      in: body
+      description: Количество товара
+      required: true
+
+definitions:
+  ReceiptPackageResponse:
+    description: Результат сохранения чеков
+    properties:
+      processed:
+        description: Количество сохраненных чеков
+        type: integer
+        example: 6

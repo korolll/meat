@@ -1,0 +1,22 @@
+{
+    "private": true,
+    "scripts": {
+        "doc-build": "spectacle    -t public/documentation documentation/api.yml",
+        "doc-watch": "spectacle -D -t public/documentation documentation/api.yml",
+        "doc-build-drivers": "spectacle    -t public/documentation/drivers documentation/api-drivers.yml",
+        "doc-watch-drivers": "spectacle -D -t public/documentation/drivers documentation/api-drivers.yml",
+        "doc-build-integrations-receipts": "spectacle    -t public/documentation/integrations/receipts documentation/api-integrations-receipts.yml",
+        "doc-watch-integrations-receipts": "spectacle -D -t public/documentation/integrations/receipts documentation/api-integrations-receipts.yml",
+        "doc-build-integrations-cash-registers": "spectacle    -t public/documentation/integrations/cash-registers documentation/api-integrations-cash-registers.yml",
+        "doc-watch-integrations-cash-registers": "spectacle -D -t public/documentation/integrations/cash-registers documentation/api-integrations-cash-registers.yml",
+        "doc-build-clients": "spectacle    -t public/documentation/clients documentation/api-clients.yml",
+        "doc-watch-clients": "spectacle -D -t public/documentation/clients documentation/api-clients.yml",
+        "doc-build-all": "npm run doc-build && npm run doc-build-drivers && npm run doc-build-integrations-receipts && npm run doc-build-integrations-cash-registers && npm run doc-build-clients"
+    },
+    "dependencies": {
+        "highlight.js": "9.14.2",
+        "node-gyp": "^8.1.0",
+        "node-sass": "^6.0.1",
+        "spectacle-docs": "^1.0.7"
+    }
+}
