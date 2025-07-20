@@ -8,7 +8,6 @@ use App\Models\Product;
 use App\Http\Requests\OrderRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use App\Services\OrderService;
 
@@ -64,14 +63,14 @@ class OrderController extends Controller
      *     @OA\Response(response=400, description="Ошибка валидации")
      * )
      */
-    public function store(OrderRequest $request): JsonResponse
+    public function store(OrderRequest $request)
     {
         $user = Auth::user();
         try {
             $order = $this->orderService->createOrder($user, $request->validated());
-            return response()->json(['order_id' => $order->id, 'status' => $order->status], 201);
+            return response(['order_id' => $order->id, 'status' => $order->status], 201);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 400);
+            return response(['error' => $e->getMessage()], 400);
         }
     }
 
@@ -79,8 +78,8 @@ class OrderController extends Controller
      * @OA\Get(
      *     path="/api/orders",
      *     tags={"Заказы"},
-     *     summary="История заказов",
-     *     description="Получение списка заказов. Требуется авторизация.",
+     *     summary="История заказов пользователя",
+     *     description="Получение списка заказов текущего пользователя. Требуется JWT авторизация через Bearer токен.",
      *     operationId="getOrders",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
@@ -143,10 +142,10 @@ class OrderController extends Controller
      *     )
      * )
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
         $user = Auth::user();
         $orders = $this->orderService->getUserOrders($user);
-        return response()->json($orders);
+        return response($orders);
     }
 }

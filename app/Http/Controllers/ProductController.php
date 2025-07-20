@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
-use Illuminate\Http\JsonResponse;
 use App\Services\ProductService;
 
 /**
@@ -42,9 +41,9 @@ class ProductController extends Controller
      *     )
      * )
      */
-    public function index(): JsonResponse
+    public function index()
     {
         $products = $this->productService->getAllProducts();
-        return response()->json($products);
+        return response($products);
     }
 }

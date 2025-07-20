@@ -8,7 +8,6 @@ use App\Http\Requests\LoginRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use Illuminate\Http\JsonResponse;
 use App\Services\AuthService;
 
 /**
@@ -49,11 +48,11 @@ class AuthController extends Controller
      *     @OA\Response(response=400, description="Ошибка валидации")
      * )
      */
-    public function register(RegisterRequest $request): JsonResponse
+    public function register(RegisterRequest $request)
     {
         $data = $request->validated();
         $this->authService->register($data);
-        return response()->json(['message' => 'Пользователь зарегистрирован'], 201);
+        return response(['message' => 'Пользователь зарегистрирован'], 201);
     }
 
     /**
@@ -81,14 +80,14 @@ class AuthController extends Controller
      *     @OA\Response(response=401, description="Неверные данные")
      * )
      */
-    public function login(LoginRequest $request): JsonResponse
+    public function login(LoginRequest $request)
     {
         $credentials = $request->only('phone', 'password');
         $token = $this->authService->login($credentials);
         if (!$token) {
-            return response()->json(['error' => 'Неверные данные'], 401);
+            return response(['error' => 'Неверные данные'], 401);
         }
-        return response()->json([
+        return response([
             'token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60
